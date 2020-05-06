@@ -1,6 +1,7 @@
 import 'package:country_code_picker/country_code_picker.dart';
 import "package:flutter/material.dart";
 import 'package:flutter/services.dart';
+import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:keyboard_visibility/keyboard_visibility.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:syncfusion_flutter_core/core.dart';
@@ -8,6 +9,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:intl/intl.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
+import 'package:line_icons/line_icons.dart';
 
 const CURVE_HEIGHT = 300.0;
 const primaryColor = Color(0xff15406C);
@@ -41,15 +43,40 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   var latestGlobalData = {};
+  var latestCountryData = {};
+  var dailyGlobalData = {};
   var dataCards = ['confirmed', 'critical', 'deaths', 'recovered'];
+  var dataCardsIcons = [
+    LineIcons.check,
+    LineIcons.heartbeat,
+    Icons.short_text,
+    LineIcons.heart_o
+  ];
   var selectedCountry;
+  String dataType = "total";
   RefreshController _refreshController =
       RefreshController(initialRefresh: false);
   ScrollController listViewController = new ScrollController();
+  int _selectedIndex = 0;
+
+  static const List<Widget> _widgetOptions = <Widget>[
+    Text(
+      'Index 0: Home',
+    ),
+    Text(
+      'Index 1: Likes',
+    ),
+    Text(
+      'Index 2: Search',
+    ),
+    Text(
+      'Index 3: Profile',
+    ),
+  ];
 
   @override
   void initState() {
-    getLatestGlobalData();
+    getLatestGlobalData(resetListViewController: false);
     KeyboardVisibilityNotification().addNewListener(
       onChange: (bool visible) {
         if (!visible) {
@@ -60,7 +87,7 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
   }
 
-  getLatestGlobalData() async {
+  getLatestGlobalData({resetListViewController: true}) async {
     final response = await http.get(
       'https://covid-19-data.p.rapidapi.com/totals?format=json',
       headers: {
@@ -73,13 +100,32 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       latestGlobalData = responseJson[0];
     });
-    listViewController.animateTo(0.0,
-        curve: Curves.easeOut, duration: const Duration(milliseconds: 300));
+    if (resetListViewController) {
+      listViewController.animateTo(0.0,
+          curve: Curves.easeOut, duration: const Duration(milliseconds: 300));
+    }
   }
 
   getLatestCountryData() async {
     final response = await http.get(
       'https://covid-19-data.p.rapidapi.com/country/code?code=$selectedCountry&format=json',
+      headers: {
+        "x-rapidapi-host": "covid-19-data.p.rapidapi.com",
+        "x-rapidapi-key": "kobRJjesp4mshawkaj0YnlruOFmKp137FOGjsnwtgFFV9t5Lso"
+      },
+    );
+    final responseJson = json.decode(response.body);
+
+    setState(() {
+      latestCountryData = responseJson[0];
+    });
+    listViewController.animateTo(0.0,
+        curve: Curves.easeOut, duration: const Duration(milliseconds: 300));
+  }
+
+  getDailyGlobalData() async {
+    final response = await http.get(
+      'https://covid-19-data.p.rapidapi.com/report/totals?date=2020-05-04&date-format=YYYY-MM-DD&format=json',
       headers: {
         "x-rapidapi-host": "covid-19-data.p.rapidapi.com",
         "x-rapidapi-key": "kobRJjesp4mshawkaj0YnlruOFmKp137FOGjsnwtgFFV9t5Lso"
@@ -121,6 +167,8 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Widget _buildContent() {
+    var latestData =
+        selectedCountry != null ? latestCountryData : latestGlobalData;
     return SmartRefresher(
       enablePullDown: true,
       header: WaterDropMaterialHeader(
@@ -179,7 +227,18 @@ class _MyHomePageState extends State<MyHomePage> {
             padding: EdgeInsets.only(top: 40),
             textStyle: TextStyle(color: Colors.white),
             showCountryOnly: true,
-            favorite: ['IT', 'FR', 'US', 'SP', 'UK', 'DE', 'RU', 'TR', 'BR', 'IR'],
+            favorite: [
+              'IT',
+              'FR',
+              'US',
+              'SP',
+              'UK',
+              'DE',
+              'RU',
+              'TR',
+              'BR',
+              'IR'
+            ],
             showOnlyCountryWhenClosed: true,
             comparator: (a, b) => b.name.compareTo(a.name),
             builder: (countryCode) {
@@ -190,15 +249,22 @@ class _MyHomePageState extends State<MyHomePage> {
                     children: <Widget>[
                       Padding(
                         padding: const EdgeInsets.only(right: 10.0),
-                        child: Image.asset(
-                          countryCode.flagUri,
-                          package: 'country_code_picker',
-                          width: 30,
-                        ),
+                        child: selectedCountry != null
+                            ? Image.asset(
+                                countryCode.flagUri,
+                                package: 'country_code_picker',
+                                width: 30,
+                              )
+                            : Icon(
+                                LineIcons.globe,
+                                size: 24,
+                                color: Colors.white,
+                              ),
                       ),
                       Text(
-                        countryCode.name,
-                        style: TextStyle(color: Colors.white),
+                        selectedCountry != null ? countryCode.name : "World",
+                        style: TextStyle(
+                            color: Colors.white, fontWeight: FontWeight.bold),
                       ),
                     ],
                   ));
@@ -220,55 +286,153 @@ class _MyHomePageState extends State<MyHomePage> {
                     physics: ClampingScrollPhysics(),
                     itemCount: 4,
                     itemBuilder: (_, i) {
-                      return statCard(
-                          dataCards[i], latestGlobalData[dataCards[i]]);
+                      return statCard(dataCards[i], latestData[dataCards[i]],
+                          dataCardsIcons[i]);
                     },
                   )),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(top: 15.0, bottom: 15),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                dataTypeButton("total"),
+                dataTypeButton("daily"),
+                dataTypeButton("weekly"),
+                dataTypeButton("monthly")
+              ],
             ),
           ),
           Expanded(
             child: Container(
                 width: MediaQuery.of(context).size.width,
-                child: SfCartesianChart(
-                    plotAreaBorderWidth: 0,
-                    palette: <Color>[primaryColor.withOpacity(0.7)],
-                    primaryXAxis: CategoryAxis(
-                      majorGridLines: MajorGridLines(
-                        width: 0,
-                      ),
-                    ),
-                    primaryYAxis: NumericAxis(
-                        isVisible: false, numberFormat: NumberFormat.compact()),
-                    series: <ChartSeries>[
-                      // Initialize line series
-                      ColumnSeries<ChartData, String>(
-                          dataSource: [
-                            // Bind data source
-                            ChartData("Confirmed",
-                                latestGlobalData["confirmed"].toDouble()),
-                            ChartData("Recovered",
-                                latestGlobalData["recovered"].toDouble()),
-                            ChartData("Deaths",
-                                latestGlobalData["deaths"].toDouble()),
-                            ChartData("Critical",
-                                latestGlobalData["critical"].toDouble()),
-                          ],
-                          xValueMapper: (ChartData sales, _) => sales.type,
-                          yValueMapper: (ChartData sales, _) => sales.value,
-                          borderRadius: BorderRadius.all(Radius.circular(5)),
-                          dataLabelSettings: DataLabelSettings(
-                              color: primaryColor,
-                              textStyle:
-                                  ChartTextStyle(fontWeight: FontWeight.w500),
-                              isVisible: true)),
-                    ])),
-          )
+                child: dataType == "total"
+                    ? SfCartesianChart(
+                        plotAreaBorderWidth: 0,
+                        margin: EdgeInsets.only(bottom: 10),
+                        palette: <Color>[primaryColor.withOpacity(0.7)],
+                        primaryXAxis: CategoryAxis(
+                          majorGridLines: MajorGridLines(
+                            width: 0,
+                          ),
+                        ),
+                        primaryYAxis: NumericAxis(
+                            isVisible: false,
+                            numberFormat: NumberFormat.compact()),
+                        series: <ChartSeries>[
+                          // Initialize line series
+                          ColumnSeries<ChartData, String>(
+                              dataSource: [
+                                // Bind data source
+                                ChartData(
+                                    "Confirmed",
+                                    latestData["confirmed"] != null
+                                        ? latestData["confirmed"].toDouble()
+                                        : 0.0),
+                                ChartData(
+                                    "Recovered",
+                                    latestData["recovered"] != null
+                                        ? latestData["recovered"].toDouble()
+                                        : 0.0),
+                                ChartData(
+                                    "Deaths",
+                                    latestData["deaths"] != null
+                                        ? latestData["deaths"].toDouble()
+                                        : 0.0),
+                                ChartData(
+                                    "Critical",
+                                    latestData["critical"] != null
+                                        ? latestData["critical"].toDouble()
+                                        : 0.0),
+                              ],
+                              xValueMapper: (ChartData sales, _) => sales.type,
+                              yValueMapper: (ChartData sales, _) => sales.value,
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(5)),
+                              dataLabelSettings: DataLabelSettings(
+                                  color: primaryColor,
+                                  textStyle: ChartTextStyle(
+                                      fontWeight: FontWeight.w500),
+                                  isVisible: true)),
+                        ])
+                    : SfCartesianChart(
+                        plotAreaBorderWidth: 0,
+                        margin: EdgeInsets.only(bottom: 10),
+                        palette: <Color>[primaryColor.withOpacity(0.7)],
+                        primaryXAxis: DateTimeAxis(
+                          majorGridLines: MajorGridLines(
+                            width: 0,
+                          ),
+                        ),
+                        primaryYAxis: NumericAxis(
+                            isVisible: false,
+                            numberFormat: NumberFormat.compact()),
+                        series: <ChartSeries>[
+                          SplineSeries<SalesData, DateTime>(
+                              dataSource: [
+                                SalesData(DateTime.now().subtract(Duration(days: 5)), 200),
+                                SalesData(DateTime.now().subtract(Duration(days: 4)), 338),
+                                SalesData(DateTime.now().subtract(Duration(days: 3)), 424),
+                                SalesData(DateTime.now().subtract(Duration(days: 2)), 200),
+                                SalesData(DateTime.now().subtract(Duration(days: 1)), 145)
+                              ],
+                              animationDuration: 3,
+                              xValueMapper: (SalesData sales, _) => sales.year,
+                              yValueMapper: (SalesData sales, _) => sales.sales)
+                        ])),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 40.0, vertical: 10),
+            child: GNav(
+                gap: 8,
+                activeColor: Colors.white,
+                iconSize: 24,
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+                duration: Duration(milliseconds: 500),
+                tabBackgroundColor: primaryColor,
+                tabs: [
+                  GButton(
+                    icon: LineIcons.bar_chart_o,
+                    text: 'Data',
+                  ),
+                  GButton(
+                    icon: LineIcons.newspaper_o,
+                    text: 'News',
+                  ),
+                  GButton(
+                    icon: LineIcons.heart_o,
+                    text: 'Charities',
+                  ),
+                ],
+                selectedIndex: _selectedIndex,
+                onTabChange: (index) {
+                  setState(() {
+                    _selectedIndex = index;
+                  });
+                }),
+          ),
         ],
       ),
     );
   }
 
-  Card statCard(title, value) {
+  FlatButton dataTypeButton(title) {
+    return FlatButton(
+        onPressed: () {
+          setState(() {
+            dataType = title;
+          });
+        },
+        color: dataType == title ? primaryColor : null,
+        child: Text(
+          '${title[0].toUpperCase()}${title.substring(1)}',
+          style: TextStyle(
+              color: dataType == title ? Colors.white : null, fontSize: 13),
+        ));
+  }
+
+  Card statCard(title, value, icon) {
     return Card(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(5),
@@ -287,11 +451,12 @@ class _MyHomePageState extends State<MyHomePage> {
                     TextStyle(fontWeight: FontWeight.w500, color: primaryColor),
               ),
               Icon(
-                Icons.info_outline,
+                icon,
                 size: 35,
+                color: primaryColor,
               ),
               Text(
-                NumberFormat.compact().format(value),
+                value != null ? NumberFormat.compact().format(value) : '—',
                 style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 20,
@@ -314,6 +479,12 @@ class ChartData {
   ChartData(this.type, this.value);
   final String type;
   final double value;
+}
+
+class SalesData {
+  SalesData(this.year, this.sales);
+  final DateTime year;
+  final double sales;
 }
 
 class CurvedShape extends StatelessWidget {
