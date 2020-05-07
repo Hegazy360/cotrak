@@ -10,6 +10,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:syncfusion_flutter_core/core.dart';
 import 'package:cotrak/blocs/news_bloc/news_bloc.dart';
+import 'package:firebase_admob/firebase_admob.dart';
 
 const primaryColor = Color(0xff15406C);
 const primaryColorLight1 = Color(0xff2F5A86);
@@ -17,6 +18,10 @@ const primaryColorLight2 = Color(0xff48739F);
 const primaryColorLight3 = Color(0xff628DB9);
 const primaryColorLight4 = Color(0xff7BA6D2);
 const secondaryColor = Color(0xffE8F0FB);
+
+// You can also test with your own ad unit IDs by registering your device as a
+// test device. Check the logs for your device's ID value.
+const String testDevice = '60447CDCFC9F5784BFDFD61E059F0BB7';
 
 void main() {
   BlocSupervisor.delegate = SimpleBlocDelegate();
@@ -62,6 +67,33 @@ class _MyHomePageState extends State<MyHomePage> {
     NewsPage(),
     CharitiesPage()
   ];
+
+  static const MobileAdTargetingInfo targetingInfo = MobileAdTargetingInfo(
+    testDevices: testDevice != null ? <String>[testDevice] : null,
+  );
+
+  InterstitialAd _interstitialAd;
+
+  InterstitialAd createInterstitialAd() {
+    return InterstitialAd(
+      adUnitId: "ca-app-pub-8400135927246890/8511977580",
+      targetingInfo: targetingInfo,
+    );
+  }
+
+  @override
+  void initState() {
+    FirebaseAdMob.instance.initialize(appId: "ca-app-pub-8400135927246890~1386783143");
+    _interstitialAd = createInterstitialAd()..load()..show();
+
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _interstitialAd?.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
