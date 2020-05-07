@@ -26,6 +26,13 @@ dependencies:
   google_nav_bar: ^2.2.0
   line_icons: ^0.2.0
   cloud_firestore: ^0.13.5
+  cached_network_image: any
+  flutter_spinkit: ^4.1.2+1
+  webview_flutter: ^0.3.21
+  bloc: ^0.14.4
+  flutter_bloc: ^0.20.0
+  shared_preferences: ^0.5.7+1
+  equatable: ^0.3.0
 
   flutter:
     sdk: flutter

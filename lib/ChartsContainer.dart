@@ -3,6 +3,8 @@ import 'package:cotrak/DateTimeChart.dart';
 import 'package:cotrak/LatestDataChart.dart';
 import 'package:flutter/material.dart';
 
+const NAVBAR_HEIGHT = 60.0;
+
 class ChartsContainer extends StatelessWidget {
   const ChartsContainer({
     Key key,
@@ -25,13 +27,25 @@ class ChartsContainer extends StatelessWidget {
         child: Container(
             width: MediaQuery.of(context).size.width,
             child: dataType == "total"
-                ? LatestDataChart(latestData: latestData)
+                ? Padding(
+                    padding: const EdgeInsets.only(bottom: NAVBAR_HEIGHT),
+                    child: LatestDataChart(latestData: latestData),
+                  )
                 : dataType == "daily"
-                    ? DateTimeChart(dateSource: dailyDataSource)
+                    ? Padding(
+                        padding: const EdgeInsets.only(bottom: NAVBAR_HEIGHT),
+                        child: DateTimeChart(dateSource: dailyDataSource),
+                      )
                     : dataType == "weekly"
-                        ? DateTimeChart(dateSource: weeklyDataSource)
-                        : DateTimeChart(
-                            dateSource: monthlyDataSource,
+                        ? Padding(
+                            padding: const EdgeInsets.only(bottom: NAVBAR_HEIGHT),
+                            child: DateTimeChart(dateSource: weeklyDataSource),
+                          )
+                        : Padding(
+                            padding: const EdgeInsets.only(bottom: NAVBAR_HEIGHT),
+                            child: DateTimeChart(
+                              dateSource: monthlyDataSource,
+                            ),
                           )));
   }
 }

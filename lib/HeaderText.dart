@@ -22,7 +22,7 @@ class HeaderText extends StatelessWidget {
                 fontWeight: FontWeight.bold),
           ),
           Text(
-            "Here's the latest Covid-19 news",
+            "Here's the latest Covid-19 data",
             style: TextStyle(
                 fontSize: 20,
                 color: Colors.white,
