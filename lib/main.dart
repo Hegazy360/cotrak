@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:country_code_picker/country_code_picker.dart';
 import "package:flutter/material.dart";
 import 'package:flutter/services.dart';
@@ -13,6 +14,10 @@ import 'package:line_icons/line_icons.dart';
 
 const CURVE_HEIGHT = 300.0;
 const primaryColor = Color(0xff15406C);
+const primaryColorLight1 = Color(0xff2F5A86);
+const primaryColorLight2 = Color(0xff48739F);
+const primaryColorLight3 = Color(0xff628DB9);
+const primaryColorLight4 = Color(0xff7BA6D2);
 const secondaryColor = Color(0xffE8F0FB);
 
 void main() {
@@ -44,8 +49,12 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   var latestGlobalData = {};
   var latestCountryData = {};
-  var dailyGlobalData = {};
+  var dailyGlobalData = [];
+  var dailyCountryData = {};
+  var dailyData = {};
+
   var dataCards = ['confirmed', 'critical', 'deaths', 'recovered'];
+  List countries = [];
   var dataCardsIcons = [
     LineIcons.check,
     LineIcons.heartbeat,
@@ -58,6 +67,9 @@ class _MyHomePageState extends State<MyHomePage> {
       RefreshController(initialRefresh: false);
   ScrollController listViewController = new ScrollController();
   int _selectedIndex = 0;
+  List<SalesData> dailyDataSource = [];
+  List<SalesData> weeklyDataSource = [];
+  List<SalesData> monthlyDataSource = [];
 
   static const List<Widget> _widgetOptions = <Widget>[
     Text(
@@ -77,6 +89,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     getLatestGlobalData(resetListViewController: false);
+    getAllCountries();
     KeyboardVisibilityNotification().addNewListener(
       onChange: (bool visible) {
         if (!visible) {
@@ -85,6 +98,29 @@ class _MyHomePageState extends State<MyHomePage> {
       },
     );
     super.initState();
+  }
+
+  getAllCountries() async {
+    QuerySnapshot querySnapshot = await Firestore.instance
+        .collection("countries")
+        .getDocuments(source: Source.cache);
+
+    if (querySnapshot == null) {
+      querySnapshot = await Firestore.instance
+          .collection("countries")
+          .getDocuments(source: Source.server);
+    }
+
+    List<DocumentSnapshot> countriesSnapshots = querySnapshot.documents;
+
+    querySnapshot.documents.map((countrySnapshot) {
+      return countrySnapshot.data;
+    });
+    countriesSnapshots.forEach((countrySnapshot) {
+      countries.add(countrySnapshot.data);
+    });
+
+    print(countries);
   }
 
   getLatestGlobalData({resetListViewController: true}) async {
@@ -123,21 +159,85 @@ class _MyHomePageState extends State<MyHomePage> {
         curve: Curves.easeOut, duration: const Duration(milliseconds: 300));
   }
 
-  getDailyGlobalData() async {
-    final response = await http.get(
-      'https://covid-19-data.p.rapidapi.com/report/totals?date=2020-05-04&date-format=YYYY-MM-DD&format=json',
-      headers: {
-        "x-rapidapi-host": "covid-19-data.p.rapidapi.com",
-        "x-rapidapi-key": "kobRJjesp4mshawkaj0YnlruOFmKp137FOGjsnwtgFFV9t5Lso"
-      },
-    );
-    final responseJson = json.decode(response.body);
+  getDailyData() async {
+    var country = countries
+        .firstWhere((country) => selectedCountry == country['alpha2code']);
 
-    setState(() {
-      latestGlobalData = responseJson[0];
-    });
-    listViewController.animateTo(0.0,
-        curve: Curves.easeOut, duration: const Duration(milliseconds: 300));
+    var sameAsCurrentCountry = dailyData.length > 0 &&
+        dailyData['daily'].values.first['country'] == country['name'];
+
+    if (!sameAsCurrentCountry) {
+      DocumentReference statsRef =
+          Firestore.instance.collection("stats").document(country['name']);
+      DocumentSnapshot getDoc = await statsRef.get();
+      setState(() {
+        dailyData = getDoc.data;
+        updateDailyChartData();
+      });
+
+      listViewController.animateTo(0.0,
+          curve: Curves.easeOut, duration: const Duration(milliseconds: 300));
+    }
+  }
+
+  updateDailyChartData() {
+    if (dailyData['daily'] != null) {
+      dailyDataSource = [];
+      DateTime now = DateTime.now().subtract(Duration(days: 1));
+      for (var i = 0; i < 7; i++) {
+        String formattedDate = DateFormat('yyyy-MM-dd').format(now);
+        dailyData['daily'].values.toList().forEach((data) {
+          if (data['date'] == formattedDate) {
+            dailyDataSource.add(
+              SalesData(
+                  now,
+                  data['total']['confirmed'].toDouble(),
+                  data['total']['active'].toDouble(),
+                  data['total']['deaths'].toDouble()),
+            );
+          }
+        });
+        now = now.subtract(Duration(days: 1));
+      }
+    }
+    if (dailyData['daily'] != null) {
+      weeklyDataSource = [];
+      DateTime now = DateTime.now().subtract(Duration(days: 1));
+      for (var i = 0; i < 7; i++) {
+        String formattedDate = DateFormat('yyyy-MM-dd').format(now);
+        dailyData['daily'].values.toList().forEach((data) {
+          if (data['date'] == formattedDate) {
+            weeklyDataSource.add(
+              SalesData(
+                  now,
+                  data['total']['confirmed'].toDouble(),
+                  data['total']['active'].toDouble(),
+                  data['total']['deaths'].toDouble()),
+            );
+          }
+        });
+        now = now.subtract(Duration(days: 7));
+      }
+    }
+    if (dailyData['daily'] != null) {
+      monthlyDataSource = [];
+      DateTime now = DateTime.now().subtract(Duration(days: 1));
+      for (var i = 0; i < 5; i++) {
+        String formattedDate = DateFormat('yyyy-MM-dd').format(now);
+        dailyData['daily'].values.toList().forEach((data) {
+          if (data['date'] == formattedDate) {
+            monthlyDataSource.add(
+              SalesData(
+                  now,
+                  data['total']['confirmed'].toDouble(),
+                  data['total']['active'].toDouble(),
+                  data['total']['deaths'].toDouble()),
+            );
+          }
+        });
+        now = now.subtract(Duration(days: 30));
+      }
+    }
   }
 
   void _onRefresh() async {
@@ -169,6 +269,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget _buildContent() {
     var latestData =
         selectedCountry != null ? latestCountryData : latestGlobalData;
+
     return SmartRefresher(
       enablePullDown: true,
       header: WaterDropMaterialHeader(
@@ -356,10 +457,18 @@ class _MyHomePageState extends State<MyHomePage> {
                                       fontWeight: FontWeight.w500),
                                   isVisible: true)),
                         ])
-                    : SfCartesianChart(
+                    : dataType == "daily"? SfCartesianChart(
+                        legend: Legend(
+                            position: LegendPosition.bottom,
+                            isVisible: true,
+                            toggleSeriesVisibility: true),
                         plotAreaBorderWidth: 0,
                         margin: EdgeInsets.only(bottom: 10),
-                        palette: <Color>[primaryColor.withOpacity(0.7)],
+                        palette: <Color>[
+                          primaryColorLight1,
+                          primaryColorLight2,
+                          primaryColorLight3,
+                        ],
                         primaryXAxis: DateTimeAxis(
                           majorGridLines: MajorGridLines(
                             width: 0,
@@ -368,19 +477,173 @@ class _MyHomePageState extends State<MyHomePage> {
                         primaryYAxis: NumericAxis(
                             isVisible: false,
                             numberFormat: NumberFormat.compact()),
-                        series: <ChartSeries>[
-                          SplineSeries<SalesData, DateTime>(
-                              dataSource: [
-                                SalesData(DateTime.now().subtract(Duration(days: 5)), 200),
-                                SalesData(DateTime.now().subtract(Duration(days: 4)), 338),
-                                SalesData(DateTime.now().subtract(Duration(days: 3)), 424),
-                                SalesData(DateTime.now().subtract(Duration(days: 2)), 200),
-                                SalesData(DateTime.now().subtract(Duration(days: 1)), 145)
-                              ],
-                              animationDuration: 3,
-                              xValueMapper: (SalesData sales, _) => sales.year,
-                              yValueMapper: (SalesData sales, _) => sales.sales)
-                        ])),
+                        series: <CartesianSeries>[
+                          ColumnSeries<SalesData, DateTime>(
+                            name: 'Confirmed',
+                            dataSource: dailyDataSource,
+                            xValueMapper: (SalesData data, _) => data.year,
+                            yValueMapper: (SalesData data, _) => data.sales,
+                            dataLabelSettings: DataLabelSettings(
+                                color: primaryColor,
+                                textStyle:
+                                    ChartTextStyle(fontWeight: FontWeight.w500),
+                                isVisible: true),
+                            trendlines: <Trendline>[
+                              Trendline(
+                                  isVisibleInLegend: false,
+                                  type: TrendlineType.polynomial,
+                                  color: primaryColor)
+                            ],
+                          ),
+                          ColumnSeries<SalesData, DateTime>(
+                            name: 'Critical',
+                            dataSource: dailyDataSource,
+                            xValueMapper: (SalesData data, _) => data.year,
+                            yValueMapper: (SalesData data, _) => data.sales2,
+                            trendlines: <Trendline>[
+                              Trendline(
+                                  isVisibleInLegend: false,
+                                  type: TrendlineType.polynomial,
+                                  color: Colors.blueGrey[200])
+                            ],
+                          ),
+                          ColumnSeries<SalesData, DateTime>(
+                            name: 'Deaths',
+                            dataSource: dailyDataSource,
+                            xValueMapper: (SalesData data, _) => data.year,
+                            yValueMapper: (SalesData data, _) => data.sales3,
+                            trendlines: <Trendline>[
+                              Trendline(
+                                  isVisibleInLegend: false,
+                                  type: TrendlineType.polynomial,
+                                  color: Colors.blueGrey[100])
+                            ],
+                          ),
+                        ]) : dataType == "weekly"? SfCartesianChart(
+                    legend: Legend(
+                        position: LegendPosition.bottom,
+                        isVisible: true,
+                        toggleSeriesVisibility: true),
+                    plotAreaBorderWidth: 0,
+                    margin: EdgeInsets.only(bottom: 10),
+                    palette: <Color>[
+                      primaryColorLight1,
+                      primaryColorLight2,
+                      primaryColorLight3,
+                    ],
+                    primaryXAxis: DateTimeAxis(
+                      majorGridLines: MajorGridLines(
+                        width: 0,
+                      ),
+                    ),
+                    primaryYAxis: NumericAxis(
+                        isVisible: false,
+                        numberFormat: NumberFormat.compact()),
+                    series: <CartesianSeries>[
+                      ColumnSeries<SalesData, DateTime>(
+                        name: 'Confirmed',
+                        dataSource: weeklyDataSource,
+                        xValueMapper: (SalesData data, _) => data.year,
+                        yValueMapper: (SalesData data, _) => data.sales,
+                        dataLabelSettings: DataLabelSettings(
+                            color: primaryColor,
+                            textStyle:
+                            ChartTextStyle(fontWeight: FontWeight.w500),
+                            isVisible: true),
+                        trendlines: <Trendline>[
+                          Trendline(
+                              isVisibleInLegend: false,
+                              type: TrendlineType.polynomial,
+                              color: primaryColor)
+                        ],
+                      ),
+                      ColumnSeries<SalesData, DateTime>(
+                        name: 'Critical',
+                        dataSource: weeklyDataSource,
+                        xValueMapper: (SalesData data, _) => data.year,
+                        yValueMapper: (SalesData data, _) => data.sales2,
+                        trendlines: <Trendline>[
+                          Trendline(
+                              isVisibleInLegend: false,
+                              type: TrendlineType.polynomial,
+                              color: Colors.blueGrey[200])
+                        ],
+                      ),
+                      ColumnSeries<SalesData, DateTime>(
+                        name: 'Deaths',
+                        dataSource: weeklyDataSource,
+                        xValueMapper: (SalesData data, _) => data.year,
+                        yValueMapper: (SalesData data, _) => data.sales3,
+                        trendlines: <Trendline>[
+                          Trendline(
+                              isVisibleInLegend: false,
+                              type: TrendlineType.polynomial,
+                              color: Colors.blueGrey[100])
+                        ],
+                      ),
+                    ]) :  SfCartesianChart(
+                    legend: Legend(
+                        position: LegendPosition.bottom,
+                        isVisible: true,
+                        toggleSeriesVisibility: true),
+                    plotAreaBorderWidth: 0,
+                    margin: EdgeInsets.only(bottom: 10),
+                    palette: <Color>[
+                      primaryColorLight1,
+                      primaryColorLight2,
+                      primaryColorLight3,
+                    ],
+                    primaryXAxis: DateTimeAxis(
+                      majorGridLines: MajorGridLines(
+                        width: 0,
+                      ),
+                    ),
+                    primaryYAxis: NumericAxis(
+                        isVisible: false,
+                        numberFormat: NumberFormat.compact()),
+                    series: <CartesianSeries>[
+                      ColumnSeries<SalesData, DateTime>(
+                        name: 'Confirmed',
+                        dataSource: monthlyDataSource,
+                        xValueMapper: (SalesData data, _) => data.year,
+                        yValueMapper: (SalesData data, _) => data.sales,
+                        dataLabelSettings: DataLabelSettings(
+                            color: primaryColor,
+                            textStyle:
+                            ChartTextStyle(fontWeight: FontWeight.w500),
+                            isVisible: true),
+                        trendlines: <Trendline>[
+                          Trendline(
+                              isVisibleInLegend: false,
+                              type: TrendlineType.polynomial,
+                              color: primaryColor)
+                        ],
+                      ),
+                      ColumnSeries<SalesData, DateTime>(
+                        name: 'Critical',
+                        dataSource: monthlyDataSource,
+                        xValueMapper: (SalesData data, _) => data.year,
+                        yValueMapper: (SalesData data, _) => data.sales2,
+                        trendlines: <Trendline>[
+                          Trendline(
+                              isVisibleInLegend: false,
+                              type: TrendlineType.polynomial,
+                              color: Colors.blueGrey[200])
+                        ],
+                      ),
+                      ColumnSeries<SalesData, DateTime>(
+                        name: 'Deaths',
+                        dataSource: monthlyDataSource,
+                        xValueMapper: (SalesData data, _) => data.year,
+                        yValueMapper: (SalesData data, _) => data.sales3,
+                        trendlines: <Trendline>[
+                          Trendline(
+                              isVisibleInLegend: false,
+                              type: TrendlineType.polynomial,
+                              color: Colors.blueGrey[100])
+                        ],
+                      ),
+                    ])),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 40.0, vertical: 10),
@@ -423,6 +686,9 @@ class _MyHomePageState extends State<MyHomePage> {
           setState(() {
             dataType = title;
           });
+          if (title == "daily") {
+            getDailyData();
+          }
         },
         color: dataType == title ? primaryColor : null,
         child: Text(
@@ -434,6 +700,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Card statCard(title, value, icon) {
     return Card(
+      color: Color(0xffF9FAFE),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(5),
         ),
@@ -472,6 +739,7 @@ class _MyHomePageState extends State<MyHomePage> {
       selectedCountry = countryCode.code;
     });
     getLatestCountryData();
+    getDailyData();
   }
 }
 
@@ -482,9 +750,11 @@ class ChartData {
 }
 
 class SalesData {
-  SalesData(this.year, this.sales);
+  SalesData(this.year, this.sales, this.sales2, this.sales3);
   final DateTime year;
   final double sales;
+  final double sales2;
+  final double sales3;
 }
 
 class CurvedShape extends StatelessWidget {

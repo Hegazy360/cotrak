@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "111748820965",
+    "firebase_url": "https://cotrak-8fef9.firebaseio.com",
+    "project_id": "cotrak-8fef9",
+    "storage_bucket": "cotrak-8fef9.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:111748820965:android:c07a0eb31ac1749865490c",
+        "android_client_info": {
+          "package_name": "com.mohega.cotrak"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "111748820965-rij63opmg6dblk6u74icht0ps5nnhofl.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD_XzcCGMWPVfmgzlUucKaPwHBuvTn46qM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "111748820965-rij63opmg6dblk6u74icht0ps5nnhofl.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
