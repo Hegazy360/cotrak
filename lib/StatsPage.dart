@@ -57,8 +57,9 @@ class _StatsPageState extends State<StatsPage> {
 
   @override
   void initState() {
-    getLatestGlobalData(resetListViewController: false);
     getAllCountries();
+    getLatestGlobalData(resetListViewController: false);
+    getDailyData(resetListViewController: false);
     KeyboardVisibilityNotification().addNewListener(
       onChange: (bool visible) {
         if (!visible) {
@@ -90,7 +91,7 @@ class _StatsPageState extends State<StatsPage> {
     });
   }
 
-  getLatestGlobalData({resetListViewController: true}) async {
+  getLatestGlobalData({bool resetListViewController: true}) async {
     final response = await http.get(
       'https://covid-19-data.p.rapidapi.com/totals?format=json',
       headers: {
@@ -126,7 +127,7 @@ class _StatsPageState extends State<StatsPage> {
         curve: Curves.easeOut, duration: const Duration(milliseconds: 300));
   }
 
-  getDailyData() async {
+  getDailyData({bool resetListViewController: true}) async {
     var country;
     var sameAsCurrentCountry = false;
     if (selectedCountry != null) {
@@ -149,8 +150,10 @@ class _StatsPageState extends State<StatsPage> {
         updateDailyChartData();
       });
 
-      listViewController.animateTo(0.0,
-          curve: Curves.easeOut, duration: const Duration(milliseconds: 300));
+      if (resetListViewController) {
+        listViewController.animateTo(0.0,
+            curve: Curves.easeOut, duration: const Duration(milliseconds: 300));
+      }
     }
   }
 
@@ -316,7 +319,7 @@ class _StatsPageState extends State<StatsPage> {
     setState(() {
       selectedCountry = countryCode == null ? null : countryCode.code;
     });
-    if(countryCode == null) {
+    if (countryCode == null) {
       getLatestGlobalData();
     } else {
       getLatestCountryData();
