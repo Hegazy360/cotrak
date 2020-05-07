@@ -68,7 +68,7 @@ class NewsList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.only(bottom: 60),
+      margin: EdgeInsets.only(bottom: 70),
       child: ListView.builder(
           itemCount: newsList.length,
           padding: EdgeInsets.all(0),

@@ -127,11 +127,18 @@ class _StatsPageState extends State<StatsPage> {
   }
 
   getDailyData() async {
-    var country = countries
-        .firstWhere((country) => selectedCountry == country['alpha2code']);
-
-    var sameAsCurrentCountry = dailyData.length > 0 &&
-        dailyData['daily'].values.first['country'] == country['name'];
+    var country;
+    var sameAsCurrentCountry = false;
+    if (selectedCountry != null) {
+      country = countries
+          .firstWhere((country) => selectedCountry == country['alpha2code']);
+      sameAsCurrentCountry = dailyData.length > 0 &&
+          dailyData['daily'].values.first['country'] == country['name'];
+    } else {
+      country = {'name': "World"};
+      sameAsCurrentCountry = dailyData.length > 0 &&
+          dailyData['daily'].values.first['country'] == null;
+    }
 
     if (!sameAsCurrentCountry) {
       DocumentReference statsRef =
@@ -150,6 +157,10 @@ class _StatsPageState extends State<StatsPage> {
   updateDailyChartData() {
     if (dailyData['daily'] != null) {
       dailyDataSource = [];
+      weeklyDataSource = [];
+      monthlyDataSource = [];
+      var confirmed, active, recovered, deaths;
+
       DateTime dailyDate = DateTime.now();
       for (var i = 0; i < 7; i++) {
         dailyDate = dailyDate.subtract(Duration(days: 1));
@@ -157,20 +168,22 @@ class _StatsPageState extends State<StatsPage> {
 
         dailyData['daily'].values.toList().forEach((data) {
           if (data['date'] == formattedDate) {
+            if (selectedCountry != null) {
+              confirmed = data['total']['confirmed'].toDouble();
+              active = data['total']['active'].toDouble();
+              recovered = data['total']['recovered'].toDouble();
+              deaths = data['total']['deaths'].toDouble();
+            } else {
+              confirmed = data['confirmed'].toDouble();
+              active = data['active'].toDouble();
+              recovered = data['recovered'].toDouble();
+              deaths = data['deaths'].toDouble();
+            }
             dailyDataSource.add(
-              DailyData(
-                  dailyDate,
-                  data['total']['confirmed'].toDouble(),
-                  data['total']['active'].toDouble(),
-                  data['total']['recovered'].toDouble(),
-                  data['total']['deaths'].toDouble()),
-            );
+                DailyData(dailyDate, confirmed, active, recovered, deaths));
           }
         });
       }
-    }
-    if (dailyData['daily'] != null) {
-      weeklyDataSource = [];
       DateTime weeklyDate = DateTime.now();
       for (var i = 0; i < 7; i++) {
         weeklyDate = weeklyDate.subtract(Duration(days: i == 0 ? 1 : 7));
@@ -178,34 +191,42 @@ class _StatsPageState extends State<StatsPage> {
 
         dailyData['daily'].values.toList().forEach((data) {
           if (data['date'] == formattedDate) {
+            if (selectedCountry != null) {
+              confirmed = data['total']['confirmed'].toDouble();
+              active = data['total']['active'].toDouble();
+              recovered = data['total']['recovered'].toDouble();
+              deaths = data['total']['deaths'].toDouble();
+            } else {
+              confirmed = data['confirmed'].toDouble();
+              active = data['active'].toDouble();
+              recovered = data['recovered'].toDouble();
+              deaths = data['deaths'].toDouble();
+            }
             weeklyDataSource.add(
-              DailyData(
-                  weeklyDate,
-                  data['total']['confirmed'].toDouble(),
-                  data['total']['active'].toDouble(),
-                  data['total']['recovered'].toDouble(),
-                  data['total']['deaths'].toDouble()),
-            );
+                DailyData(weeklyDate, confirmed, active, recovered, deaths));
           }
         });
       }
-    }
-    if (dailyData['daily'] != null) {
-      monthlyDataSource = [];
+      print("---------------------");
       DateTime monthlyDate = DateTime.now();
       for (var i = 0; i < 5; i++) {
         monthlyDate = monthlyDate.subtract(Duration(days: i == 0 ? 1 : 30));
         String formattedDate = DateFormat('yyyy-MM-dd').format(monthlyDate);
         dailyData['daily'].values.toList().forEach((data) {
           if (data['date'] == formattedDate) {
+            if (selectedCountry != null) {
+              confirmed = data['total']['confirmed'].toDouble();
+              active = data['total']['active'].toDouble();
+              recovered = data['total']['recovered'].toDouble();
+              deaths = data['total']['deaths'].toDouble();
+            } else {
+              confirmed = data['confirmed'].toDouble();
+              active = data['active'].toDouble();
+              recovered = data['recovered'].toDouble();
+              deaths = data['deaths'].toDouble();
+            }
             monthlyDataSource.add(
-              DailyData(
-                  monthlyDate,
-                  data['total']['confirmed'].toDouble(),
-                  data['total']['active'].toDouble(),
-                  data['total']['recovered'].toDouble(),
-                  data['total']['deaths'].toDouble()),
-            );
+                DailyData(monthlyDate, confirmed, active, recovered, deaths));
           }
         });
       }
@@ -281,9 +302,7 @@ class _StatsPageState extends State<StatsPage> {
           setState(() {
             dataType = title;
           });
-          if (title == "daily") {
-            getDailyData();
-          }
+          getDailyData();
         },
         color: dataType == title ? primaryColor : null,
         child: Text(
@@ -295,11 +314,13 @@ class _StatsPageState extends State<StatsPage> {
 
   void _onCountryChange(CountryCode countryCode) {
     setState(() {
-      selectedCountry = countryCode.code;
+      selectedCountry = countryCode == null ? null : countryCode.code;
     });
-    getLatestCountryData();
+    if(countryCode == null) {
+      getLatestGlobalData();
+    } else {
+      getLatestCountryData();
+    }
     getDailyData();
   }
-
-
 }

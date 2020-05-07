@@ -28,7 +28,6 @@ class NewsBloc extends Bloc<NewsEvent, NewsState> {
   }
 
   Future<List> fetchClimateNews(SharedPreferences prefs) async {
-    String climateNewsCache = prefs.getString('climateNews');
     String cacheDate = prefs.getString('cacheDate');
     List news;
     String today = DateTime.now().toString();

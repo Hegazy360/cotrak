@@ -32,6 +32,7 @@ class DateTimeChart extends StatelessWidget {
           primaryColorLight1,
           primaryColorLight2,
           primaryColorLight3,
+          primaryColorLight4,
         ],
         primaryXAxis: DateTimeAxis(
           majorGridLines: MajorGridLines(
@@ -90,7 +91,7 @@ class DateTimeChart extends StatelessWidget {
               Trendline(
                   isVisibleInLegend: false,
                   type: TrendlineType.polynomial,
-                  color: Colors.blueGrey[100])
+                  color: Colors.blueGrey[200])
             ],
           ),
         ]);

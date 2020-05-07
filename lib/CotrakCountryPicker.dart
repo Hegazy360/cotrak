@@ -3,11 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:line_icons/line_icons.dart';
 
 class CotrakCountryPicker extends StatelessWidget {
-  const CotrakCountryPicker({
-    Key key,
-    @required this.selectedCountry,
-    @required this.onCountryChange
-  }) : super(key: key);
+  const CotrakCountryPicker(
+      {Key key, @required this.selectedCountry, @required this.onCountryChange})
+      : super(key: key);
 
   final selectedCountry;
   final onCountryChange;
@@ -47,6 +45,19 @@ class CotrakCountryPicker extends StatelessWidget {
                   style: TextStyle(
                       color: Colors.white, fontWeight: FontWeight.bold),
                 ),
+                selectedCountry != null ? 
+                Container(
+                  width: 30,
+                  height: 30,
+                  child: IconButton(
+                    padding: EdgeInsets.all(0),
+                    color: Colors.white,
+                    onPressed: () {
+                      onCountryChange(null);
+                    },
+                    icon: Icon(Icons.close, size: 20,),
+                  ),
+                ) : Container()
               ],
             ));
       },
