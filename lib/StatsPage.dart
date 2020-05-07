@@ -182,8 +182,11 @@ class _StatsPageState extends State<StatsPage> {
               recovered = data['recovered'].toDouble();
               deaths = data['deaths'].toDouble();
             }
-            dailyDataSource.add(
-                DailyData(dailyDate, confirmed, active, recovered, deaths));
+            if (confirmed == 0) {
+              i--;
+              dailyDataSource.add(
+                  DailyData(dailyDate, confirmed, active, recovered, deaths));
+            }
           }
         });
       }
@@ -205,8 +208,12 @@ class _StatsPageState extends State<StatsPage> {
               recovered = data['recovered'].toDouble();
               deaths = data['deaths'].toDouble();
             }
-            weeklyDataSource.add(
-                DailyData(weeklyDate, confirmed, active, recovered, deaths));
+
+            if (confirmed == 0) {
+              i--;
+              weeklyDataSource.add(
+                  DailyData(weeklyDate, confirmed, active, recovered, deaths));
+            }
           }
         });
       }
@@ -228,8 +235,11 @@ class _StatsPageState extends State<StatsPage> {
               recovered = data['recovered'].toDouble();
               deaths = data['deaths'].toDouble();
             }
-            monthlyDataSource.add(
-                DailyData(monthlyDate, confirmed, active, recovered, deaths));
+            if (confirmed == 0) {
+              i--;
+              monthlyDataSource.add(
+                  DailyData(monthlyDate, confirmed, active, recovered, deaths));
+            }
           }
         });
       }
