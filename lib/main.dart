@@ -83,8 +83,11 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   void initState() {
-    FirebaseAdMob.instance.initialize(appId: "ca-app-pub-8400135927246890~1386783143");
-    _interstitialAd = createInterstitialAd()..load()..show();
+    FirebaseAdMob.instance
+        .initialize(appId: "ca-app-pub-8400135927246890~1386783143");
+    _interstitialAd = createInterstitialAd()
+      ..load()
+      ..show();
 
     super.initState();
   }
