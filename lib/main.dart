@@ -183,60 +183,67 @@ class _MyHomePageState extends State<MyHomePage> {
   updateDailyChartData() {
     if (dailyData['daily'] != null) {
       dailyDataSource = [];
-      DateTime now = DateTime.now().subtract(Duration(days: 1));
+      DateTime dailyDate = DateTime.now();
       for (var i = 0; i < 7; i++) {
-        String formattedDate = DateFormat('yyyy-MM-dd').format(now);
+        dailyDate = dailyDate.subtract(Duration(days: 1));
+        String formattedDate = DateFormat('yyyy-MM-dd').format(dailyDate);
+
         dailyData['daily'].values.toList().forEach((data) {
           if (data['date'] == formattedDate) {
             dailyDataSource.add(
               SalesData(
-                  now,
+                  dailyDate,
                   data['total']['confirmed'].toDouble(),
                   data['total']['active'].toDouble(),
+                  data['total']['recovered'].toDouble(),
                   data['total']['deaths'].toDouble()),
             );
           }
         });
-        now = now.subtract(Duration(days: 1));
       }
     }
     if (dailyData['daily'] != null) {
       weeklyDataSource = [];
-      DateTime now = DateTime.now().subtract(Duration(days: 1));
+      DateTime weeklyDate = DateTime.now();
       for (var i = 0; i < 7; i++) {
-        String formattedDate = DateFormat('yyyy-MM-dd').format(now);
+        weeklyDate = weeklyDate.subtract(Duration(days: i == 0 ? 1: 7));
+        String formattedDate = DateFormat('yyyy-MM-dd').format(weeklyDate);
+
         dailyData['daily'].values.toList().forEach((data) {
           if (data['date'] == formattedDate) {
             weeklyDataSource.add(
               SalesData(
-                  now,
+                  weeklyDate,
                   data['total']['confirmed'].toDouble(),
                   data['total']['active'].toDouble(),
+                  data['total']['recovered'].toDouble(),
                   data['total']['deaths'].toDouble()),
             );
           }
         });
-        now = now.subtract(Duration(days: 7));
       }
     }
     if (dailyData['daily'] != null) {
       monthlyDataSource = [];
-      DateTime now = DateTime.now().subtract(Duration(days: 1));
+      DateTime monthlyDate = DateTime.now();
       for (var i = 0; i < 5; i++) {
-        String formattedDate = DateFormat('yyyy-MM-dd').format(now);
+        monthlyDate = monthlyDate.subtract(Duration(days: i == 0 ? 1: 30));
+        String formattedDate = DateFormat('yyyy-MM-dd').format(monthlyDate);
+        print(formattedDate);
         dailyData['daily'].values.toList().forEach((data) {
           if (data['date'] == formattedDate) {
             monthlyDataSource.add(
               SalesData(
-                  now,
+                  monthlyDate,
                   data['total']['confirmed'].toDouble(),
                   data['total']['active'].toDouble(),
+                  data['total']['recovered'].toDouble(),
                   data['total']['deaths'].toDouble()),
             );
           }
         });
-        now = now.subtract(Duration(days: 30));
       }
+
     }
   }
 
@@ -449,201 +456,258 @@ class _MyHomePageState extends State<MyHomePage> {
                               ],
                               xValueMapper: (ChartData sales, _) => sales.type,
                               yValueMapper: (ChartData sales, _) => sales.value,
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(5)),
                               dataLabelSettings: DataLabelSettings(
                                   color: primaryColor,
                                   textStyle: ChartTextStyle(
                                       fontWeight: FontWeight.w500),
                                   isVisible: true)),
                         ])
-                    : dataType == "daily"? SfCartesianChart(
-                        legend: Legend(
-                            position: LegendPosition.bottom,
-                            isVisible: true,
-                            toggleSeriesVisibility: true),
-                        plotAreaBorderWidth: 0,
-                        margin: EdgeInsets.only(bottom: 10),
-                        palette: <Color>[
-                          primaryColorLight1,
-                          primaryColorLight2,
-                          primaryColorLight3,
-                        ],
-                        primaryXAxis: DateTimeAxis(
-                          majorGridLines: MajorGridLines(
-                            width: 0,
-                          ),
-                        ),
-                        primaryYAxis: NumericAxis(
-                            isVisible: false,
-                            numberFormat: NumberFormat.compact()),
-                        series: <CartesianSeries>[
-                          ColumnSeries<SalesData, DateTime>(
-                            name: 'Confirmed',
-                            dataSource: dailyDataSource,
-                            xValueMapper: (SalesData data, _) => data.year,
-                            yValueMapper: (SalesData data, _) => data.sales,
-                            dataLabelSettings: DataLabelSettings(
-                                color: primaryColor,
-                                textStyle:
-                                    ChartTextStyle(fontWeight: FontWeight.w500),
-                                isVisible: true),
-                            trendlines: <Trendline>[
-                              Trendline(
-                                  isVisibleInLegend: false,
-                                  type: TrendlineType.polynomial,
-                                  color: primaryColor)
+                    : dataType == "daily"
+                        ? SfCartesianChart(
+                            legend: Legend(
+                                position: LegendPosition.bottom,
+                                isVisible: true,
+                                toggleSeriesVisibility: true),
+                            plotAreaBorderWidth: 0,
+                            margin: EdgeInsets.only(bottom: 10),
+                            palette: <Color>[
+                              primaryColorLight1,
+                              primaryColorLight2,
+                              primaryColorLight3,
                             ],
-                          ),
-                          ColumnSeries<SalesData, DateTime>(
-                            name: 'Critical',
-                            dataSource: dailyDataSource,
-                            xValueMapper: (SalesData data, _) => data.year,
-                            yValueMapper: (SalesData data, _) => data.sales2,
-                            trendlines: <Trendline>[
-                              Trendline(
-                                  isVisibleInLegend: false,
-                                  type: TrendlineType.polynomial,
-                                  color: Colors.blueGrey[200])
-                            ],
-                          ),
-                          ColumnSeries<SalesData, DateTime>(
-                            name: 'Deaths',
-                            dataSource: dailyDataSource,
-                            xValueMapper: (SalesData data, _) => data.year,
-                            yValueMapper: (SalesData data, _) => data.sales3,
-                            trendlines: <Trendline>[
-                              Trendline(
-                                  isVisibleInLegend: false,
-                                  type: TrendlineType.polynomial,
-                                  color: Colors.blueGrey[100])
-                            ],
-                          ),
-                        ]) : dataType == "weekly"? SfCartesianChart(
-                    legend: Legend(
-                        position: LegendPosition.bottom,
-                        isVisible: true,
-                        toggleSeriesVisibility: true),
-                    plotAreaBorderWidth: 0,
-                    margin: EdgeInsets.only(bottom: 10),
-                    palette: <Color>[
-                      primaryColorLight1,
-                      primaryColorLight2,
-                      primaryColorLight3,
-                    ],
-                    primaryXAxis: DateTimeAxis(
-                      majorGridLines: MajorGridLines(
-                        width: 0,
-                      ),
-                    ),
-                    primaryYAxis: NumericAxis(
-                        isVisible: false,
-                        numberFormat: NumberFormat.compact()),
-                    series: <CartesianSeries>[
-                      ColumnSeries<SalesData, DateTime>(
-                        name: 'Confirmed',
-                        dataSource: weeklyDataSource,
-                        xValueMapper: (SalesData data, _) => data.year,
-                        yValueMapper: (SalesData data, _) => data.sales,
-                        dataLabelSettings: DataLabelSettings(
-                            color: primaryColor,
-                            textStyle:
-                            ChartTextStyle(fontWeight: FontWeight.w500),
-                            isVisible: true),
-                        trendlines: <Trendline>[
-                          Trendline(
-                              isVisibleInLegend: false,
-                              type: TrendlineType.polynomial,
-                              color: primaryColor)
-                        ],
-                      ),
-                      ColumnSeries<SalesData, DateTime>(
-                        name: 'Critical',
-                        dataSource: weeklyDataSource,
-                        xValueMapper: (SalesData data, _) => data.year,
-                        yValueMapper: (SalesData data, _) => data.sales2,
-                        trendlines: <Trendline>[
-                          Trendline(
-                              isVisibleInLegend: false,
-                              type: TrendlineType.polynomial,
-                              color: Colors.blueGrey[200])
-                        ],
-                      ),
-                      ColumnSeries<SalesData, DateTime>(
-                        name: 'Deaths',
-                        dataSource: weeklyDataSource,
-                        xValueMapper: (SalesData data, _) => data.year,
-                        yValueMapper: (SalesData data, _) => data.sales3,
-                        trendlines: <Trendline>[
-                          Trendline(
-                              isVisibleInLegend: false,
-                              type: TrendlineType.polynomial,
-                              color: Colors.blueGrey[100])
-                        ],
-                      ),
-                    ]) :  SfCartesianChart(
-                    legend: Legend(
-                        position: LegendPosition.bottom,
-                        isVisible: true,
-                        toggleSeriesVisibility: true),
-                    plotAreaBorderWidth: 0,
-                    margin: EdgeInsets.only(bottom: 10),
-                    palette: <Color>[
-                      primaryColorLight1,
-                      primaryColorLight2,
-                      primaryColorLight3,
-                    ],
-                    primaryXAxis: DateTimeAxis(
-                      majorGridLines: MajorGridLines(
-                        width: 0,
-                      ),
-                    ),
-                    primaryYAxis: NumericAxis(
-                        isVisible: false,
-                        numberFormat: NumberFormat.compact()),
-                    series: <CartesianSeries>[
-                      ColumnSeries<SalesData, DateTime>(
-                        name: 'Confirmed',
-                        dataSource: monthlyDataSource,
-                        xValueMapper: (SalesData data, _) => data.year,
-                        yValueMapper: (SalesData data, _) => data.sales,
-                        dataLabelSettings: DataLabelSettings(
-                            color: primaryColor,
-                            textStyle:
-                            ChartTextStyle(fontWeight: FontWeight.w500),
-                            isVisible: true),
-                        trendlines: <Trendline>[
-                          Trendline(
-                              isVisibleInLegend: false,
-                              type: TrendlineType.polynomial,
-                              color: primaryColor)
-                        ],
-                      ),
-                      ColumnSeries<SalesData, DateTime>(
-                        name: 'Critical',
-                        dataSource: monthlyDataSource,
-                        xValueMapper: (SalesData data, _) => data.year,
-                        yValueMapper: (SalesData data, _) => data.sales2,
-                        trendlines: <Trendline>[
-                          Trendline(
-                              isVisibleInLegend: false,
-                              type: TrendlineType.polynomial,
-                              color: Colors.blueGrey[200])
-                        ],
-                      ),
-                      ColumnSeries<SalesData, DateTime>(
-                        name: 'Deaths',
-                        dataSource: monthlyDataSource,
-                        xValueMapper: (SalesData data, _) => data.year,
-                        yValueMapper: (SalesData data, _) => data.sales3,
-                        trendlines: <Trendline>[
-                          Trendline(
-                              isVisibleInLegend: false,
-                              type: TrendlineType.polynomial,
-                              color: Colors.blueGrey[100])
-                        ],
-                      ),
-                    ])),
+                            primaryXAxis: DateTimeAxis(
+                              majorGridLines: MajorGridLines(
+                                width: 0,
+                              ),
+                            ),
+                            primaryYAxis: NumericAxis(
+                                isVisible: false,
+                                numberFormat: NumberFormat.compact()),
+                            series: <CartesianSeries>[
+                              ColumnSeries<SalesData, DateTime>(
+                                name: 'Confirmed',
+                                dataSource: dailyDataSource,
+                                xValueMapper: (SalesData data, _) => data.date,
+                                yValueMapper: (SalesData data, _) => data.confirmed,
+                                dataLabelSettings: DataLabelSettings(
+                                    color: primaryColor,
+                                    textStyle: ChartTextStyle(
+                                        fontWeight: FontWeight.w500),
+                                    isVisible: true),
+                                trendlines: <Trendline>[
+                                  Trendline(
+                                      isVisibleInLegend: false,
+                                      type: TrendlineType.polynomial,
+                                      color: primaryColor)
+                                ],
+                              ),
+                              ColumnSeries<SalesData, DateTime>(
+                                name: 'Active',
+                                dataSource: dailyDataSource,
+                                xValueMapper: (SalesData data, _) => data.date,
+                                yValueMapper: (SalesData data, _) =>
+                                    data.active,
+                                trendlines: <Trendline>[
+                                  Trendline(
+                                      isVisibleInLegend: false,
+                                      type: TrendlineType.polynomial,
+                                      color: Colors.blueGrey[200])
+                                ],
+                              ),
+                              ColumnSeries<SalesData, DateTime>(
+                                name: 'Recovered',
+                                dataSource: dailyDataSource,
+                                xValueMapper: (SalesData data, _) => data.date,
+                                yValueMapper: (SalesData data, _) =>
+                                data.recovered,
+                                trendlines: <Trendline>[
+                                  Trendline(
+                                      isVisibleInLegend: false,
+                                      type: TrendlineType.polynomial,
+                                      color: Colors.blueGrey[200])
+                                ],
+                              ),
+                              ColumnSeries<SalesData, DateTime>(
+                                name: 'Deaths',
+                                dataSource: dailyDataSource,
+                                xValueMapper: (SalesData data, _) => data.date,
+                                yValueMapper: (SalesData data, _) =>
+                                    data.deaths,
+                                trendlines: <Trendline>[
+                                  Trendline(
+                                      isVisibleInLegend: false,
+                                      type: TrendlineType.polynomial,
+                                      color: Colors.blueGrey[100])
+                                ],
+                              ),
+                            ])
+                        : dataType == "weekly"
+                            ? SfCartesianChart(
+                                legend: Legend(
+                                    position: LegendPosition.bottom,
+                                    isVisible: true,
+                                    toggleSeriesVisibility: true),
+                                plotAreaBorderWidth: 0,
+                                margin: EdgeInsets.only(bottom: 10),
+                                palette: <Color>[
+                                  primaryColorLight1,
+                                  primaryColorLight2,
+                                  primaryColorLight3,
+                                ],
+                                primaryXAxis: DateTimeAxis(
+                                  majorGridLines: MajorGridLines(
+                                    width: 0,
+                                  ),
+                                ),
+                                primaryYAxis: NumericAxis(
+                                    isVisible: false,
+                                    numberFormat: NumberFormat.compact()),
+                                series: <CartesianSeries>[
+                                  ColumnSeries<SalesData, DateTime>(
+                                    name: 'Confirmed',
+                                    dataSource: weeklyDataSource,
+                                    xValueMapper: (SalesData data, _) =>
+                                        data.date,
+                                    yValueMapper: (SalesData data, _) =>
+                                        data.confirmed,
+                                    dataLabelSettings: DataLabelSettings(
+                                        color: primaryColor,
+                                        textStyle: ChartTextStyle(
+                                            fontWeight: FontWeight.w500),
+                                        isVisible: true),
+                                    trendlines: <Trendline>[
+                                      Trendline(
+                                          isVisibleInLegend: false,
+                                          type: TrendlineType.polynomial,
+                                          color: primaryColor)
+                                    ],
+                                  ),
+                                  ColumnSeries<SalesData, DateTime>(
+                                    name: 'Active',
+                                    dataSource: weeklyDataSource,
+                                    xValueMapper: (SalesData data, _) =>
+                                        data.date,
+                                    yValueMapper: (SalesData data, _) =>
+                                        data.active,
+                                    trendlines: <Trendline>[
+                                      Trendline(
+                                          isVisibleInLegend: false,
+                                          type: TrendlineType.polynomial,
+                                          color: Colors.blueGrey[200])
+                                    ],
+                                  ),
+                                  ColumnSeries<SalesData, DateTime>(
+                                    name: 'Recovered',
+                                    dataSource: weeklyDataSource,
+                                    xValueMapper: (SalesData data, _) =>
+                                    data.date,
+                                    yValueMapper: (SalesData data, _) =>
+                                    data.recovered,
+                                    trendlines: <Trendline>[
+                                      Trendline(
+                                          isVisibleInLegend: false,
+                                          type: TrendlineType.polynomial,
+                                          color: Colors.blueGrey[200])
+                                    ],
+                                  ),
+                                  ColumnSeries<SalesData, DateTime>(
+                                    name: 'Deaths',
+                                    dataSource: weeklyDataSource,
+                                    xValueMapper: (SalesData data, _) =>
+                                        data.date,
+                                    yValueMapper: (SalesData data, _) =>
+                                        data.deaths,
+                                    trendlines: <Trendline>[
+                                      Trendline(
+                                          isVisibleInLegend: false,
+                                          type: TrendlineType.polynomial,
+                                          color: Colors.blueGrey[100])
+                                    ],
+                                  ),
+                                ])
+                            : SfCartesianChart(
+                                legend: Legend(
+                                    position: LegendPosition.bottom,
+                                    isVisible: true,
+                                    toggleSeriesVisibility: true),
+                                plotAreaBorderWidth: 0,
+                                margin: EdgeInsets.only(bottom: 10),
+                                palette: <Color>[
+                                  primaryColorLight1,
+                                  primaryColorLight2,
+                                  primaryColorLight3,
+                                ],
+                                primaryXAxis: DateTimeAxis(
+                                  majorGridLines: MajorGridLines(
+                                    width: 0,
+                                  ),
+                                ),
+                                primaryYAxis: NumericAxis(
+                                    isVisible: false,
+                                    numberFormat: NumberFormat.compact()),
+                                series: <CartesianSeries>[
+                                  ColumnSeries<SalesData, DateTime>(
+                                    name: 'Confirmed',
+                                    dataSource: monthlyDataSource,
+                                    xValueMapper: (SalesData data, _) =>
+                                        data.date,
+                                    yValueMapper: (SalesData data, _) =>
+                                        data.confirmed,
+                                    dataLabelSettings: DataLabelSettings(
+                                        color: primaryColor,
+                                        textStyle: ChartTextStyle(
+                                            fontWeight: FontWeight.w500),
+                                        isVisible: true),
+                                    trendlines: <Trendline>[
+                                      Trendline(
+                                          isVisibleInLegend: false,
+                                          type: TrendlineType.polynomial,
+                                          color: primaryColor)
+                                    ],
+                                  ),
+                                  ColumnSeries<SalesData, DateTime>(
+                                    name: 'Active',
+                                    dataSource: monthlyDataSource,
+                                    xValueMapper: (SalesData data, _) =>
+                                        data.date,
+                                    yValueMapper: (SalesData data, _) =>
+                                        data.active,
+                                    trendlines: <Trendline>[
+                                      Trendline(
+                                          isVisibleInLegend: false,
+                                          type: TrendlineType.polynomial,
+                                          color: Colors.blueGrey[200])
+                                    ],
+                                  ),
+                                  ColumnSeries<SalesData, DateTime>(
+                                    name: 'Recovered',
+                                    dataSource: monthlyDataSource,
+                                    xValueMapper: (SalesData data, _) =>
+                                    data.date,
+                                    yValueMapper: (SalesData data, _) =>
+                                    data.recovered,
+                                    trendlines: <Trendline>[
+                                      Trendline(
+                                          isVisibleInLegend: false,
+                                          type: TrendlineType.polynomial,
+                                          color: Colors.blueGrey[200])
+                                    ],
+                                  ),
+                                  ColumnSeries<SalesData, DateTime>(
+                                    name: 'Deaths',
+                                    dataSource: monthlyDataSource,
+                                    xValueMapper: (SalesData data, _) =>
+                                        data.date,
+                                    yValueMapper: (SalesData data, _) =>
+                                        data.deaths,
+                                    trendlines: <Trendline>[
+                                      Trendline(
+                                          isVisibleInLegend: false,
+                                          type: TrendlineType.polynomial,
+                                          color: Colors.blueGrey[100])
+                                    ],
+                                  ),
+                                ])),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 40.0, vertical: 10),
@@ -700,7 +764,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Card statCard(title, value, icon) {
     return Card(
-      color: Color(0xffF9FAFE),
+        color: Color(0xffF9FAFE),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(5),
         ),
@@ -750,11 +814,12 @@ class ChartData {
 }
 
 class SalesData {
-  SalesData(this.year, this.sales, this.sales2, this.sales3);
-  final DateTime year;
-  final double sales;
-  final double sales2;
-  final double sales3;
+  SalesData(this.date, this.confirmed, this.active, this.recovered, this.deaths);
+  final DateTime date;
+  final double confirmed;
+  final double active;
+  final double recovered;
+  final double deaths;
 }
 
 class CurvedShape extends StatelessWidget {
