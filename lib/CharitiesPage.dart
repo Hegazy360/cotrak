@@ -151,7 +151,8 @@ class CharitiesPage extends StatelessWidget {
                         imageBuilder: (context, imageProvider) => Image(
                           image: imageProvider,
                           height: 50,
-                          fit: BoxFit.fitHeight,
+                          width: 100,
+                          fit: BoxFit.contain,
                         ),
                       )
                     ],
