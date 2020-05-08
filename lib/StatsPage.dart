@@ -161,13 +161,18 @@ class _StatsPageState extends State<StatsPage> {
   setPeriodicChartData(sourceType, count, incrementRate) {
     var confirmed, active, recovered, deaths;
     DateTime dailyDate = DateTime.now();
+    bool hasBeenShifted = false;
+    bool dateFound = false;
+
     for (var i = 0; i < count; i++) {
+      dateFound = false;
       dailyDate =
           dailyDate.subtract(Duration(days: i == 0 ? 1 : incrementRate));
       String formattedDate = DateFormat('yyyy-MM-dd').format(dailyDate);
 
       dailyData['daily'].values.toList().forEach((data) {
         if (data['date'] == formattedDate) {
+          dateFound = true;
           if (selectedCountry != null) {
             confirmed = data['total']['confirmed'].toDouble();
             active = data['total']['active'].toDouble();
@@ -179,24 +184,24 @@ class _StatsPageState extends State<StatsPage> {
             recovered = data['recovered'].toDouble();
             deaths = data['deaths'].toDouble();
           }
-          if (confirmed > 0) {
-            if (sourceType == "daily") {
-              dailyDataSource.add(
-                  DailyData(dailyDate, confirmed, active, recovered, deaths));
-            }
-            if (sourceType == "weekly") {
-              weeklyDataSource.add(
-                  DailyData(dailyDate, confirmed, active, recovered, deaths));
-            }
-            if (sourceType == "monthly") {
-              monthlyDataSource.add(
-                  DailyData(dailyDate, confirmed, active, recovered, deaths));
-            }
-          } else {
-            i--;
+          if (sourceType == "daily") {
+            dailyDataSource.add(
+                DailyData(dailyDate, confirmed, active, recovered, deaths));
+          }
+          if (sourceType == "weekly") {
+            weeklyDataSource.add(
+                DailyData(dailyDate, confirmed, active, recovered, deaths));
+          }
+          if (sourceType == "monthly") {
+            monthlyDataSource.add(
+                DailyData(dailyDate, confirmed, active, recovered, deaths));
           }
         }
       });
+      if (!dateFound && i == 0 && !hasBeenShifted) {
+        i--;
+        hasBeenShifted = true;
+      }
     }
   }
 
