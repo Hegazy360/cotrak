@@ -45,19 +45,23 @@ class CotrakCountryPicker extends StatelessWidget {
                   style: TextStyle(
                       color: Colors.white, fontWeight: FontWeight.bold),
                 ),
-                selectedCountry != null ? 
-                Container(
-                  width: 30,
-                  height: 30,
-                  child: IconButton(
-                    padding: EdgeInsets.all(0),
-                    color: Colors.white,
-                    onPressed: () {
-                      onCountryChange(null);
-                    },
-                    icon: Icon(Icons.close, size: 20,),
-                  ),
-                ) : Container()
+                selectedCountry != null
+                    ? Container(
+                        width: 30,
+                        height: 30,
+                        child: IconButton(
+                          padding: EdgeInsets.all(0),
+                          color: Colors.white,
+                          onPressed: () {
+                            onCountryChange(null);
+                          },
+                          icon: Icon(
+                            Icons.close,
+                            size: 20,
+                          ),
+                        ),
+                      )
+                    : Container()
               ],
             ));
       },

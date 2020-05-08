@@ -32,11 +32,9 @@ class StatsPage extends StatefulWidget {
 }
 
 class _StatsPageState extends State<StatsPage> {
-  var latestGlobalData = {};
-  var latestCountryData = {};
-  var dailyGlobalData = [];
-  var dailyCountryData = {};
+  var latestData = {};
   var dailyData = {};
+  var yesterdaysCases = 0;
 
   var dataCards = ['confirmed', 'today', 'critical', 'deaths', 'recovered'];
   List countries = [];
@@ -59,8 +57,9 @@ class _StatsPageState extends State<StatsPage> {
   @override
   void initState() {
     getAllCountries();
-    getLatestGlobalData(resetListViewController: false);
-    getDailyData(resetListViewController: false);
+    // getLatestGlobalData();
+    // getDailyData(null);
+    updateAllData();
     KeyboardVisibilityNotification().addNewListener(
       onChange: (bool visible) {
         if (!visible) {
@@ -92,7 +91,33 @@ class _StatsPageState extends State<StatsPage> {
     });
   }
 
-  getLatestGlobalData({bool resetListViewController: true}) async {
+  updateAllData({country, resetListViewController: true}) async {
+    var tempLatestData, tempDailyData;
+    if (country != null) {
+      //country logic
+      tempLatestData = await getLatestCountryData(country);
+    } else {
+      //global logic
+      tempLatestData = await getLatestGlobalData();
+    }
+
+    tempDailyData = await getDailyData(country);
+
+    setState(() {
+      latestData = tempLatestData;
+      dailyData = tempDailyData;
+      selectedCountry = country;
+
+      updateDailyChartData(tempDailyData);
+    });
+
+    if (resetListViewController) {
+      listViewController.animateTo(0.0,
+          curve: Curves.easeOut, duration: const Duration(milliseconds: 300));
+    }
+  }
+
+  getLatestGlobalData() async {
     final response = await http.get(
       'https://covid-19-data.p.rapidapi.com/totals?format=json',
       headers: {
@@ -102,18 +127,12 @@ class _StatsPageState extends State<StatsPage> {
     );
     final responseJson = json.decode(response.body);
 
-    setState(() {
-      latestGlobalData = responseJson[0];
-    });
-    if (resetListViewController) {
-      listViewController.animateTo(0.0,
-          curve: Curves.easeOut, duration: const Duration(milliseconds: 300));
-    }
+    return responseJson[0];
   }
 
-  getLatestCountryData() async {
+  getLatestCountryData(country) async {
     final response = await http.get(
-      'https://covid-19-data.p.rapidapi.com/country/code?code=$selectedCountry&format=json',
+      'https://covid-19-data.p.rapidapi.com/country/code?code=$country&format=json',
       headers: {
         "x-rapidapi-host": "covid-19-data.p.rapidapi.com",
         "x-rapidapi-key": "kobRJjesp4mshawkaj0YnlruOFmKp137FOGjsnwtgFFV9t5Lso"
@@ -121,20 +140,16 @@ class _StatsPageState extends State<StatsPage> {
     );
     final responseJson = json.decode(response.body);
 
-    setState(() {
-      latestCountryData = responseJson[0];
-    });
-    listViewController.animateTo(0.0,
-        curve: Curves.easeOut, duration: const Duration(milliseconds: 300));
+    return responseJson[0];
   }
 
-  getDailyData({bool resetListViewController: true}) async {
+  getDailyData(currentCountry) async {
     var country;
     var sameAsCurrentCountry = false;
 
-    if (selectedCountry != null) {
+    if (currentCountry != null) {
       country = countries
-          .firstWhere((country) => selectedCountry == country['alpha2code']);
+          .firstWhere((country) => currentCountry == country['alpha2code']);
       sameAsCurrentCountry = dailyData.length > 0 &&
           dailyData['daily'].values.first['country'] == country['name'];
     } else {
@@ -147,15 +162,7 @@ class _StatsPageState extends State<StatsPage> {
       DocumentReference statsRef =
           Firestore.instance.collection("stats").document(country['name']);
       DocumentSnapshot getDoc = await statsRef.get();
-      setState(() {
-        dailyData = getDoc.data;
-        updateDailyChartData();
-      });
-
-      if (resetListViewController) {
-        listViewController.animateTo(0.0,
-            curve: Curves.easeOut, duration: const Duration(milliseconds: 300));
-      }
+      return getDoc.data;
     }
   }
 
@@ -186,6 +193,9 @@ class _StatsPageState extends State<StatsPage> {
             deaths = data['deaths'].toDouble();
           }
           if (sourceType == "daily") {
+            if (i == 0) {
+              yesterdaysCases = confirmed.toInt();
+            }
             dailyDataSource.add(
                 DailyData(dailyDate, confirmed, active, recovered, deaths));
           }
@@ -206,7 +216,7 @@ class _StatsPageState extends State<StatsPage> {
     }
   }
 
-  updateDailyChartData() {
+  updateDailyChartData(dailyData) {
     if (dailyData['daily'] != null) {
       dailyDataSource = [];
       weeklyDataSource = [];
@@ -219,11 +229,7 @@ class _StatsPageState extends State<StatsPage> {
 
   void _onRefresh() async {
     _refreshController.refreshCompleted();
-    if (selectedCountry == null) {
-      await getLatestGlobalData();
-    } else {
-      await getLatestCountryData();
-    }
+    updateAllData();
   }
 
   void _onLoading() async {
@@ -232,9 +238,7 @@ class _StatsPageState extends State<StatsPage> {
 
   @override
   Widget build(BuildContext context) {
-    var latestData =
-        selectedCountry != null ? latestCountryData : latestGlobalData;
-
+    print("here");
     return SmartRefresher(
       enablePullDown: true,
       header: WaterDropMaterialHeader(
@@ -256,7 +260,9 @@ class _StatsPageState extends State<StatsPage> {
               listViewController: listViewController,
               dataCards: dataCards,
               latestData: latestData,
-              dailyData: dailyData,
+              todaysCases: latestData['confirmed'] != null
+                  ? latestData['confirmed'] - yesterdaysCases
+                  : null,
               dataCardsIcons: dataCardsIcons),
           Padding(
             padding: const EdgeInsets.only(top: 15.0, bottom: 15),
@@ -287,7 +293,6 @@ class _StatsPageState extends State<StatsPage> {
           setState(() {
             dataType = title;
           });
-          getDailyData();
         },
         color: dataType == title ? primaryColor : null,
         child: Text(
@@ -298,14 +303,6 @@ class _StatsPageState extends State<StatsPage> {
   }
 
   void _onCountryChange(CountryCode countryCode) {
-    setState(() {
-      selectedCountry = countryCode == null ? null : countryCode.code;
-    });
-    if (countryCode == null) {
-      getLatestGlobalData();
-    } else {
-      getLatestCountryData();
-    }
-    getDailyData();
+    updateAllData(country: countryCode == null ? null : countryCode.code);
   }
 }

@@ -14,13 +14,13 @@ class HorizontalStatCards extends StatelessWidget {
     @required this.listViewController,
     @required this.dataCards,
     @required this.latestData,
-    @required this.dataCardsIcons, @required this.dailyData,
+    @required this.dataCardsIcons, @required this.todaysCases,
   }) : super(key: key);
 
   final ScrollController listViewController;
   final List<String> dataCards;
   final Map latestData;
-  final Map dailyData;
+  final int todaysCases;
   final List<IconData> dataCardsIcons;
 
   @override
@@ -77,14 +77,9 @@ class HorizontalStatCards extends StatelessWidget {
               physics: ClampingScrollPhysics(),
               itemCount: 5,
               itemBuilder: (_, i) {
-                if(i == 1 && dailyData['daily'] != null && latestData['confirmed'] != null) {
-                  DateTime dailyDate = DateTime.now().subtract(Duration(days: 1));
-                  String formattedDate = DateFormat('yyyy-MM-dd').format(dailyDate);
-                  var yesterdayStat = dailyData['daily'].values.toList().firstWhere((element) => element['date'] == formattedDate);
-                  var value = latestData['confirmed'] - yesterdayStat['confirmed'];
-
+                if(i == 1) {
                   return statCard(
-                    dataCards[i], value, dataCardsIcons[i]);
+                    dataCards[i], todaysCases, dataCardsIcons[i]);
                 }
                 return statCard(
                     dataCards[i], latestData[dataCards[i]], dataCardsIcons[i]);
