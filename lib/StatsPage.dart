@@ -38,10 +38,11 @@ class _StatsPageState extends State<StatsPage> {
   var dailyCountryData = {};
   var dailyData = {};
 
-  var dataCards = ['confirmed', 'critical', 'deaths', 'recovered'];
+  var dataCards = ['confirmed', 'today', 'critical', 'deaths', 'recovered'];
   List countries = [];
   var dataCardsIcons = [
     LineIcons.check,
+    LineIcons.plus,
     LineIcons.heartbeat,
     Icons.short_text,
     LineIcons.heart_o
@@ -255,6 +256,7 @@ class _StatsPageState extends State<StatsPage> {
               listViewController: listViewController,
               dataCards: dataCards,
               latestData: latestData,
+              dailyData: dailyData,
               dataCardsIcons: dataCardsIcons),
           Padding(
             padding: const EdgeInsets.only(top: 15.0, bottom: 15),

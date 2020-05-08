@@ -22,6 +22,7 @@ class DateTimeChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SfCartesianChart(
+        key: UniqueKey(),
         legend: Legend(
             position: LegendPosition.bottom,
             isVisible: true,

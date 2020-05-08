@@ -21,6 +21,7 @@ class LatestDataChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SfCartesianChart(
+        key: UniqueKey(),
         plotAreaBorderWidth: 0,
         margin: EdgeInsets.only(bottom: 10),
         palette: <Color>[primaryColor.withOpacity(0.7)],
