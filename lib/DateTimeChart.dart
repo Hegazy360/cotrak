@@ -27,7 +27,7 @@ class DateTimeChart extends StatelessWidget {
             isVisible: true,
             toggleSeriesVisibility: true),
         plotAreaBorderWidth: 0,
-        margin: EdgeInsets.only(bottom: 10),
+        margin: EdgeInsets.only(left: 5, right: 5,bottom: 10),
         palette: <Color>[
           primaryColorLight1,
           primaryColorLight2,

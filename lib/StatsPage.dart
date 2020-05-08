@@ -158,94 +158,56 @@ class _StatsPageState extends State<StatsPage> {
     }
   }
 
+  setPeriodicChartData(sourceType, count, incrementRate) {
+    var confirmed, active, recovered, deaths;
+    DateTime dailyDate = DateTime.now();
+    for (var i = 0; i < count; i++) {
+      dailyDate =
+          dailyDate.subtract(Duration(days: i == 0 ? 1 : incrementRate));
+      String formattedDate = DateFormat('yyyy-MM-dd').format(dailyDate);
+
+      dailyData['daily'].values.toList().forEach((data) {
+        if (data['date'] == formattedDate) {
+          if (selectedCountry != null) {
+            confirmed = data['total']['confirmed'].toDouble();
+            active = data['total']['active'].toDouble();
+            recovered = data['total']['recovered'].toDouble();
+            deaths = data['total']['deaths'].toDouble();
+          } else {
+            confirmed = data['confirmed'].toDouble();
+            active = data['active'].toDouble();
+            recovered = data['recovered'].toDouble();
+            deaths = data['deaths'].toDouble();
+          }
+          if (confirmed > 0) {
+            if (sourceType == "daily") {
+              dailyDataSource.add(
+                  DailyData(dailyDate, confirmed, active, recovered, deaths));
+            }
+            if (sourceType == "weekly") {
+              weeklyDataSource.add(
+                  DailyData(dailyDate, confirmed, active, recovered, deaths));
+            }
+            if (sourceType == "monthly") {
+              monthlyDataSource.add(
+                  DailyData(dailyDate, confirmed, active, recovered, deaths));
+            }
+          } else {
+            i--;
+          }
+        }
+      });
+    }
+  }
+
   updateDailyChartData() {
     if (dailyData['daily'] != null) {
       dailyDataSource = [];
       weeklyDataSource = [];
       monthlyDataSource = [];
-      var confirmed, active, recovered, deaths;
-
-      DateTime dailyDate = DateTime.now();
-      for (var i = 0; i < 7; i++) {
-        dailyDate = dailyDate.subtract(Duration(days: 1));
-        String formattedDate = DateFormat('yyyy-MM-dd').format(dailyDate);
-
-        dailyData['daily'].values.toList().forEach((data) {
-          if (data['date'] == formattedDate) {
-            if (selectedCountry != null) {
-              confirmed = data['total']['confirmed'].toDouble();
-              active = data['total']['active'].toDouble();
-              recovered = data['total']['recovered'].toDouble();
-              deaths = data['total']['deaths'].toDouble();
-            } else {
-              confirmed = data['confirmed'].toDouble();
-              active = data['active'].toDouble();
-              recovered = data['recovered'].toDouble();
-              deaths = data['deaths'].toDouble();
-            }
-            if (confirmed > 0) {
-              dailyDataSource.add(
-                  DailyData(dailyDate, confirmed, active, recovered, deaths));
-            } else {
-              i--;
-            }
-          }
-        });
-      }
-      DateTime weeklyDate = DateTime.now();
-      for (var i = 0; i < 7; i++) {
-        weeklyDate = weeklyDate.subtract(Duration(days: i == 0 ? 1 : 7));
-        String formattedDate = DateFormat('yyyy-MM-dd').format(weeklyDate);
-
-        dailyData['daily'].values.toList().forEach((data) {
-          if (data['date'] == formattedDate) {
-            if (selectedCountry != null) {
-              confirmed = data['total']['confirmed'].toDouble();
-              active = data['total']['active'].toDouble();
-              recovered = data['total']['recovered'].toDouble();
-              deaths = data['total']['deaths'].toDouble();
-            } else {
-              confirmed = data['confirmed'].toDouble();
-              active = data['active'].toDouble();
-              recovered = data['recovered'].toDouble();
-              deaths = data['deaths'].toDouble();
-            }
-
-            if (confirmed > 0) {
-              weeklyDataSource.add(
-                  DailyData(weeklyDate, confirmed, active, recovered, deaths));
-            } else {
-              i--;
-            }
-          }
-        });
-      }
-      DateTime monthlyDate = DateTime.now();
-      for (var i = 0; i < 5; i++) {
-        monthlyDate = monthlyDate.subtract(Duration(days: i == 0 ? 1 : 30));
-        String formattedDate = DateFormat('yyyy-MM-dd').format(monthlyDate);
-        dailyData['daily'].values.toList().forEach((data) {
-          if (data['date'] == formattedDate) {
-            if (selectedCountry != null) {
-              confirmed = data['total']['confirmed'].toDouble();
-              active = data['total']['active'].toDouble();
-              recovered = data['total']['recovered'].toDouble();
-              deaths = data['total']['deaths'].toDouble();
-            } else {
-              confirmed = data['confirmed'].toDouble();
-              active = data['active'].toDouble();
-              recovered = data['recovered'].toDouble();
-              deaths = data['deaths'].toDouble();
-            }
-            if (confirmed > 0) {
-              monthlyDataSource.add(
-                  DailyData(monthlyDate, confirmed, active, recovered, deaths));
-            } else {
-              i--;
-            }
-          }
-        });
-      }
+      setPeriodicChartData("daily", 7, 1);
+      setPeriodicChartData("weekly", 7, 7);
+      setPeriodicChartData("monthly", 5, 30);
     }
   }
 
