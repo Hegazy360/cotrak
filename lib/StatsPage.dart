@@ -75,7 +75,7 @@ class _StatsPageState extends State<StatsPage> {
         .collection("countries")
         .getDocuments(source: Source.cache);
 
-    if (querySnapshot == null) {
+    if (querySnapshot == null || querySnapshot.documents.length == 0) {
       querySnapshot = await Firestore.instance
           .collection("countries")
           .getDocuments(source: Source.server);
@@ -130,6 +130,7 @@ class _StatsPageState extends State<StatsPage> {
   getDailyData({bool resetListViewController: true}) async {
     var country;
     var sameAsCurrentCountry = false;
+
     if (selectedCountry != null) {
       country = countries
           .firstWhere((country) => selectedCountry == country['alpha2code']);
@@ -219,7 +220,6 @@ class _StatsPageState extends State<StatsPage> {
           }
         });
       }
-      print("---------------------");
       DateTime monthlyDate = DateTime.now();
       for (var i = 0; i < 5; i++) {
         monthlyDate = monthlyDate.subtract(Duration(days: i == 0 ? 1 : 30));
