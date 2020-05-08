@@ -28,9 +28,8 @@ void main() {
   SyncfusionLicense.registerLicense(
       "NT8mJyc2IWhia31ifWN9YGVoYmF8YGJ8ampqanNiYmlmamlmanMDHmg+fTs2NDIpKmpnEzs8Jz4yOj99MDw+");
 
-  // final UserRepository userRepository = UserRepository();
   runApp(
-    MyApp(/*userRepository: userRepository*/),
+    MyApp(),
   );
 }
 
