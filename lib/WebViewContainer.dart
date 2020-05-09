@@ -9,25 +9,44 @@ class WebViewContainer extends StatefulWidget {
   _WebViewContainerState createState() => _WebViewContainerState();
 }
 
-class _WebViewContainerState extends State<WebViewContainer> {
+class _WebViewContainerState extends State<WebViewContainer>
+    with WidgetsBindingObserver {
   final _key = UniqueKey();
+  WebViewController _controller;
+
+  @override
+  initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void deactivate() {
+    super.deactivate();
+    _controller?.reload();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused) {
+      _controller?.reload();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Material(
-        // appBar: AppBar(
-        //   backgroundColor: Colors.white,
-        //   title: Text(
-        //     widget.title,
-        //     style: TextStyle(color: Colors.black, fontSize: 12),
-        //   ),
-        //   leading: BackButton(
-        //     color: Colors.black,
-        //   ),
-        // ),
         child: Column(
       children: [
         Expanded(
             child: WebView(
+                onWebViewCreated: (controller) => _controller = controller,
                 key: _key,
                 javascriptMode: JavascriptMode.unrestricted,
                 initialUrl: widget.url)),

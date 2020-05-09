@@ -30,7 +30,7 @@ class NewsBloc extends Bloc<NewsEvent, NewsState> {
   Future<List> fetchClimateNews(SharedPreferences prefs) async {
     List news;
     final climateNews = await http.get(
-        "https://newsapi.org/v2/everything?q=%22corona%20virus%22%20AND%20%22covid%2019%22&language=en&sortBy=popularity&apiKey=fcd8f6cd8c2a4eebb48c9bd9de8e3dae");
+        "https://newsapi.org/v2/everything?q=%22corona%20virus%22%20OR%20%22covid%2019%22&language=en&sortBy=popularity&apiKey=fcd8f6cd8c2a4eebb48c9bd9de8e3dae");
     news = json.decode(climateNews.body)['articles'] as List;
     news.sort((a, b) => b['publishedAt'].compareTo(a['publishedAt']));
 

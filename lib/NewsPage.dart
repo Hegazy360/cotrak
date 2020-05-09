@@ -165,9 +165,14 @@ class NewsList extends StatelessWidget {
                         ),
                       ),
                     ),
-                    placeholder: (context, url) => SpinKitPulse(
-                      color: Colors.blueGrey,
-                      size: 25.0,
+                    placeholder: (context, url) => Container(
+                      height: 370,
+                      child: Center(
+                        child: SpinKitPulse(
+                          color: Colors.blueGrey,
+                          size: 25.0,
+                        ),
+                      ),
                     ),
                     errorWidget: (context, url, error) => Center(
                       child: Column(
