@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cotrak/AppLocalizations.dart';
 import 'package:cotrak/ChartsContainer.dart';
 import 'package:cotrak/CotrakCountryPicker.dart';
 import 'package:cotrak/DailyData.dart';
@@ -274,6 +275,7 @@ class _StatsPageState extends State<StatsPage> {
   }
 
   FlatButton dataTypeButton(title) {
+    print(title);
     return FlatButton(
         onPressed: () {
           setState(() {
@@ -282,7 +284,7 @@ class _StatsPageState extends State<StatsPage> {
         },
         color: dataType == title ? primaryColor : null,
         child: Text(
-          '${title[0].toUpperCase()}${title.substring(1)}',
+          AppLocalizations.of(context).translate(title),
           style: TextStyle(
               color: dataType == title ? Colors.white : null, fontSize: 13),
         ));

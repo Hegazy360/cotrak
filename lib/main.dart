@@ -1,6 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:cotrak/CharitiesPage.dart';
 import 'package:cotrak/CurvedShape.dart';
+import 'package:cotrak/AppLocalizations.dart';
 import 'package:cotrak/NavBar.dart';
 import 'package:cotrak/NewsPage.dart';
 import 'package:cotrak/StatsPage.dart';
@@ -8,6 +9,8 @@ import 'package:cotrak/blocs/simple_bloc_delegate.dart';
 import "package:flutter/material.dart";
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:provider/provider.dart';
 import 'package:syncfusion_flutter_core/core.dart';
 import 'package:cotrak/blocs/news_bloc/news_bloc.dart';
 import 'package:firebase_admob/firebase_admob.dart';
@@ -23,29 +26,53 @@ const secondaryColor = Color(0xffE8F0FB);
 // test device. Check the logs for your device's ID value.
 const String testDevice = '60447CDCFC9F5784BFDFD61E059F0BB7';
 
-void main() {
+void main() async {
   BlocSupervisor.delegate = SimpleBlocDelegate();
+  WidgetsFlutterBinding.ensureInitialized();
+  AppLanguage appLanguage = AppLanguage();
+  await appLanguage.fetchLocale();
   SyncfusionLicense.registerLicense(
       "NT8mJyc2IWhia31ifWN9YGVoYmF8YGJ8ampqanNiYmlmamlmanMDHmg+fTs2NDIpKmpnEzs8Jz4yOj99MDw+");
 
   runApp(
-    MyApp(),
+    MyApp(appLanguage: appLanguage,),
   );
 }
 
 class MyApp extends StatelessWidget {
+  final AppLanguage appLanguage;
+
+  MyApp({this.appLanguage});
+
   @override
   Widget build(BuildContext context) {
     SystemChrome.setEnabledSystemUIOverlays([]);
-    return MaterialApp(
-      home: MultiBlocProvider(
-        providers: [
-          BlocProvider<NewsBloc>(
-            builder: (BuildContext context) => NewsBloc(),
+    return ChangeNotifierProvider<AppLanguage>(
+      create: (_) => appLanguage,
+      child: Consumer<AppLanguage>(builder: (context, model, child) {
+        return MaterialApp(
+          locale: model.appLocal,
+          supportedLocales: [
+            Locale('en', 'US'),
+            Locale('ar', ''),
+          ],
+          localizationsDelegates: [
+            AppLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+          ],
+
+          home: MultiBlocProvider(
+            providers: [
+              BlocProvider<NewsBloc>(
+                builder: (BuildContext context) => NewsBloc(),
+              ),
+            ],
+            child: MyHomePage(),
           ),
-        ],
-        child: MyHomePage(),
-      ),
+        );
+      }),
     );
   }
 }

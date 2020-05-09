@@ -1,3 +1,4 @@
+import 'package:cotrak/AppLocalizations.dart';
 import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:line_icons/line_icons.dart';
@@ -24,29 +25,32 @@ class NavBar extends StatelessWidget {
     return Container(
       width: MediaQuery.of(context).size.width,
       padding: const EdgeInsets.symmetric(horizontal: 40.0, vertical: 10),
-      child: GNav(
-          gap: 8,
-          activeColor: Colors.white,
-          iconSize: 24,
-          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 5),
-          duration: Duration(milliseconds: 500),
-          tabBackgroundColor: primaryColor,
-          tabs: [
-            GButton(
-              icon: LineIcons.bar_chart_o,
-              text: 'Data',
-            ),
-            GButton(
-              icon: LineIcons.newspaper_o,
-              text: 'News',
-            ),
-            GButton(
-              icon: LineIcons.heart_o,
-              text: 'Charities',
-            ),
-          ],
-          selectedIndex: selectedIndex,
-          onTabChange: onTabChange),
+      child: Directionality(
+        textDirection: TextDirection.ltr,
+        child: GNav(
+            gap: 8,
+            activeColor: Colors.white,
+            iconSize: 24,
+            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+            duration: Duration(milliseconds: 500),
+            tabBackgroundColor: primaryColor,
+            tabs: [
+              GButton(
+                icon: LineIcons.bar_chart_o,
+                text: AppLocalizations.of(context).translate('data'),
+              ),
+              GButton(
+                icon: LineIcons.newspaper_o,
+                text: AppLocalizations.of(context).translate('news'),
+              ),
+              GButton(
+                icon: LineIcons.heart_o,
+                text: AppLocalizations.of(context).translate('charities'),
+              ),
+            ],
+            selectedIndex: selectedIndex,
+            onTabChange: onTabChange),
+      ),
     );
   }
 }

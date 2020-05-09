@@ -1,5 +1,7 @@
+import 'package:cotrak/AppLocalizations.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 const primaryColor = Color(0xff15406C);
 const primaryColorLight1 = Color(0xff2F5A86);
@@ -14,7 +16,8 @@ class HorizontalStatCards extends StatelessWidget {
     @required this.listViewController,
     @required this.dataCards,
     @required this.latestData,
-    @required this.dataCardsIcons, @required this.todaysCases,
+    @required this.dataCardsIcons,
+    @required this.todaysCases,
   }) : super(key: key);
 
   final ScrollController listViewController;
@@ -25,6 +28,7 @@ class HorizontalStatCards extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var appLanguage = Provider.of<AppLanguage>(context);
     Card statCard(title, value, icon) {
       return Card(
           color: Color(0xffF9FAFE),
@@ -40,7 +44,7 @@ class HorizontalStatCards extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Text(
-                  '${title[0].toUpperCase()}${title.substring(1)}',
+                  AppLocalizations.of(context).translate(title),
                   style: TextStyle(
                       fontWeight: FontWeight.w500, color: primaryColor),
                 ),
@@ -50,7 +54,17 @@ class HorizontalStatCards extends StatelessWidget {
                   color: primaryColor,
                 ),
                 Text(
-                  value != null ? value < 0? 'N/A' : NumberFormat.compact().format(value) : '—',
+                  value != null
+                      ? value < 0
+                          ? 'N/A'
+                          : appLanguage.appLocal.toString() == "en"
+                              ? NumberFormat.compact(
+                                      locale: appLanguage.appLocal.toString())
+                                  .format(value)
+                              : NumberFormat.compactLong(
+                                      locale: appLanguage.appLocal.toString())
+                                  .format(value)
+                      : '—',
                   style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 20,
@@ -77,9 +91,8 @@ class HorizontalStatCards extends StatelessWidget {
               physics: ClampingScrollPhysics(),
               itemCount: 5,
               itemBuilder: (_, i) {
-                if(i == 1) {
-                  return statCard(
-                    dataCards[i], todaysCases, dataCardsIcons[i]);
+                if (i == 1) {
+                  return statCard(dataCards[i], todaysCases, dataCardsIcons[i]);
                 }
                 return statCard(
                     dataCards[i], latestData[dataCards[i]], dataCardsIcons[i]);

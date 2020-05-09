@@ -1,5 +1,7 @@
+import 'package:cotrak/AppLocalizations.dart';
 import 'package:cotrak/LatestData.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:intl/intl.dart';
 
@@ -20,6 +22,8 @@ class LatestDataChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var appLanguage = Provider.of<AppLanguage>(context);
+
     return SfCartesianChart(
         key: UniqueKey(),
         plotAreaBorderWidth: 0,
@@ -31,29 +35,29 @@ class LatestDataChart extends StatelessWidget {
           ),
         ),
         primaryYAxis:
-            NumericAxis(isVisible: false, numberFormat: NumberFormat.compact()),
+            NumericAxis(isVisible: false, numberFormat:  NumberFormat.compact(locale: appLanguage.appLocal.toString())),
         series: <ChartSeries>[
           // Initialize line series
           ColumnSeries<LatestData, String>(
               dataSource: [
                 // Bind data source
                 LatestData(
-                    "Confirmed",
+                    AppLocalizations.of(context).translate('confirmed'),
                     latestData["confirmed"] != null
                         ? latestData["confirmed"].toDouble()
                         : 0.0),
                 LatestData(
-                    "Recovered",
+                    AppLocalizations.of(context).translate('recovered'),
                     latestData["recovered"] != null
                         ? latestData["recovered"].toDouble()
                         : 0.0),
                 LatestData(
-                    "Deaths",
+                    AppLocalizations.of(context).translate('deaths'),
                     latestData["deaths"] != null
                         ? latestData["deaths"].toDouble()
                         : 0.0),
                 LatestData(
-                    "Critical",
+                    AppLocalizations.of(context).translate('critical'),
                     latestData["critical"] != null
                         ? latestData["critical"].toDouble()
                         : 0.0),

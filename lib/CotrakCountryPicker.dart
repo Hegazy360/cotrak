@@ -1,6 +1,17 @@
+import 'package:cotrak/AppLocalizations.dart';
 import 'package:flutter/material.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:sliding_sheet/sliding_sheet.dart';
+
+import 'package:logger/logger.dart';
+
+var logger = Logger(
+  printer: PrettyPrinter(),
+);
+
+var loggerNoStack = Logger(
+  printer: PrettyPrinter(methodCount: 0),
+);
 
 class CotrakCountryPicker extends StatelessWidget {
   const CotrakCountryPicker(
@@ -22,6 +33,7 @@ class CotrakCountryPicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
     return GestureDetector(
       onTap: () {
         // onCountryChange(country: "EG");
@@ -34,7 +46,8 @@ class CotrakCountryPicker extends StatelessWidget {
             children: <Widget>[
               Padding(
                 padding: const EdgeInsets.only(right: 10.0),
-                child: selectedCountry != null && selectedCountry['alpha2code'] != null
+                child: selectedCountry != null &&
+                        selectedCountry['alpha2code'] != null
                     ? Image.asset(
                         'icons/flags/png/${selectedCountry['alpha2code'].toLowerCase()}.png',
                         width: 30,
@@ -45,10 +58,16 @@ class CotrakCountryPicker extends StatelessWidget {
                         color: Colors.white,
                       ),
               ),
-              Text(
-                selectedCountry != null ? selectedCountry['name'] : "World",
-                style:
-                    TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              Padding(
+                padding: const EdgeInsets.only(right: 10.0),
+                child: Text(
+                  selectedCountry != null
+                      ? AppLocalizations.of(context).translate(
+                          selectedCountry['alpha2code'].toLowerCase())
+                      : AppLocalizations.of(context).translate("world"),
+                  style: TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.bold),
+                ),
               ),
               selectedCountry != null
                   ? Container(
@@ -88,10 +107,13 @@ class CotrakCountryPicker extends StatelessWidget {
             child: Container(
               height: 500,
               child: ListView.builder(
-                padding: EdgeInsets.symmetric(vertical: 20,horizontal: 10),
+                padding: EdgeInsets.symmetric(vertical: 20, horizontal: 10),
                 physics: ClampingScrollPhysics(),
                 itemCount: countries.length,
                 itemBuilder: (_, i) {
+                  loggerNoStack.i(countries[i]['alpha2code']);
+                  loggerNoStack.i(countries[i]['name']);
+
                   return FlatButton(
                     onPressed: () {
                       onCountryChange(country: countries[i]);
@@ -112,7 +134,14 @@ class CotrakCountryPicker extends StatelessWidget {
                                   color: Colors.black,
                                 ),
                         ),
-                        Flexible(child: Text(countries[i]['name'])),
+                        Flexible(
+                            child: Padding(
+                              padding: const EdgeInsets.only(right: 10.0),
+                              child: Text(countries[i]['alpha2code'] != null
+                                  ? AppLocalizations.of(context).translate(
+                                      countries[i]['alpha2code'].toLowerCase())
+                                  : countries[i]['name']),
+                            )),
                       ],
                     ),
                   );

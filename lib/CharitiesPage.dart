@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cotrak/AppLocalizations.dart';
 import 'package:cotrak/WebViewContainer.dart';
 import 'package:flutter/material.dart';
 import 'package:line_icons/line_icons.dart';
@@ -81,19 +82,19 @@ class CharitiesPage extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Text(
-            "Charities",
+            AppLocalizations.of(context).translate('charities_title'),
             style: TextStyle(
                 fontSize: 35, color: Colors.white, fontWeight: FontWeight.bold),
           ),
           Text(
-            "Here's a list of charities fighting the epidemic.",
+            AppLocalizations.of(context).translate('charities_subtitle'),
             style: TextStyle(
                 fontSize: 15, color: Colors.white, fontWeight: FontWeight.bold),
           ),
           Padding(
             padding: const EdgeInsets.only(bottom: 20.0),
             child: Text(
-              "Please help if you can.",
+              AppLocalizations.of(context).translate('charities_subtitle2'),
               style: TextStyle(
                   fontSize: 15,
                   color: Colors.white,

@@ -24,30 +24,31 @@ class ChartsContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Expanded(
-        child: Container(
-            width: MediaQuery.of(context).size.width,
-            child: dataType == "total"
-                ? Padding(
-                    padding: const EdgeInsets.only(bottom: NAVBAR_HEIGHT),
-                    child: LatestDataChart(latestData: latestData),
-                  )
-                : dataType == "daily"
-                    ? Padding(
-                        padding: const EdgeInsets.only(bottom: NAVBAR_HEIGHT),
-                        child: DateTimeChart(dateSource: dailyDataSource),
-                      )
-                    : dataType == "weekly"
-                        ? Padding(
-                            padding:
-                                const EdgeInsets.only(bottom: NAVBAR_HEIGHT),
-                            child: DateTimeChart(dateSource: weeklyDataSource),
-                          )
-                        : Padding(
-                            padding:
-                                const EdgeInsets.only(bottom: NAVBAR_HEIGHT),
-                            child: DateTimeChart(
-                              dateSource: monthlyDataSource,
-                            ),
-                          )));
+        child: Directionality(
+      textDirection: TextDirection.ltr,
+      child: Container(
+          width: MediaQuery.of(context).size.width,
+          child: dataType == "total"
+              ? Padding(
+                  padding: const EdgeInsets.only(bottom: NAVBAR_HEIGHT),
+                  child: LatestDataChart(latestData: latestData),
+                )
+              : dataType == "daily"
+                  ? Padding(
+                      padding: const EdgeInsets.only(bottom: NAVBAR_HEIGHT),
+                      child: DateTimeChart(dateSource: dailyDataSource),
+                    )
+                  : dataType == "weekly"
+                      ? Padding(
+                          padding: const EdgeInsets.only(bottom: NAVBAR_HEIGHT),
+                          child: DateTimeChart(dateSource: weeklyDataSource),
+                        )
+                      : Padding(
+                          padding: const EdgeInsets.only(bottom: NAVBAR_HEIGHT),
+                          child: DateTimeChart(
+                            dateSource: monthlyDataSource,
+                          ),
+                        )),
+    ));
   }
 }

@@ -1,6 +1,7 @@
-
+import 'package:cotrak/AppLocalizations.dart';
 import 'package:cotrak/DailyData.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:intl/intl.dart';
 
@@ -21,6 +22,8 @@ class DateTimeChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var appLanguage = Provider.of<AppLanguage>(context);
+
     return SfCartesianChart(
         key: UniqueKey(),
         legend: Legend(
@@ -28,7 +31,7 @@ class DateTimeChart extends StatelessWidget {
             isVisible: true,
             toggleSeriesVisibility: true),
         plotAreaBorderWidth: 0,
-        margin: EdgeInsets.only(left: 5, right: 5,bottom: 10),
+        margin: EdgeInsets.only(left: 5, right: 5, bottom: 10),
         palette: <Color>[
           primaryColorLight1,
           primaryColorLight2,
@@ -40,11 +43,13 @@ class DateTimeChart extends StatelessWidget {
             width: 0,
           ),
         ),
-        primaryYAxis:
-            NumericAxis(isVisible: false, numberFormat: NumberFormat.compact()),
+        primaryYAxis: NumericAxis(
+            isVisible: false,
+            numberFormat:
+                NumberFormat.compact(locale: appLanguage.appLocal.toString())),
         series: <CartesianSeries>[
           ColumnSeries<DailyData, DateTime>(
-            name: 'Confirmed',
+            name: AppLocalizations.of(context).translate('confirmed'),
             dataSource: dateSource,
             xValueMapper: (DailyData data, _) => data.date,
             yValueMapper: (DailyData data, _) => data.confirmed,
@@ -60,7 +65,7 @@ class DateTimeChart extends StatelessWidget {
             ],
           ),
           ColumnSeries<DailyData, DateTime>(
-            name: 'Active',
+            name: AppLocalizations.of(context).translate('active'),
             dataSource: dateSource,
             xValueMapper: (DailyData data, _) => data.date,
             yValueMapper: (DailyData data, _) => data.active,
@@ -72,7 +77,7 @@ class DateTimeChart extends StatelessWidget {
             ],
           ),
           ColumnSeries<DailyData, DateTime>(
-            name: 'Recovered',
+            name: AppLocalizations.of(context).translate('recovered'),
             dataSource: dateSource,
             xValueMapper: (DailyData data, _) => data.date,
             yValueMapper: (DailyData data, _) => data.recovered,
@@ -84,7 +89,7 @@ class DateTimeChart extends StatelessWidget {
             ],
           ),
           ColumnSeries<DailyData, DateTime>(
-            name: 'Deaths',
+            name: AppLocalizations.of(context).translate('deaths'),
             dataSource: dateSource,
             xValueMapper: (DailyData data, _) => data.date,
             yValueMapper: (DailyData data, _) => data.deaths,
