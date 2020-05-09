@@ -38,11 +38,13 @@ class ChartsContainer extends StatelessWidget {
                       )
                     : dataType == "weekly"
                         ? Padding(
-                            padding: const EdgeInsets.only(bottom: NAVBAR_HEIGHT),
+                            padding:
+                                const EdgeInsets.only(bottom: NAVBAR_HEIGHT),
                             child: DateTimeChart(dateSource: weeklyDataSource),
                           )
                         : Padding(
-                            padding: const EdgeInsets.only(bottom: NAVBAR_HEIGHT),
+                            padding:
+                                const EdgeInsets.only(bottom: NAVBAR_HEIGHT),
                             child: DateTimeChart(
                               dateSource: monthlyDataSource,
                             ),

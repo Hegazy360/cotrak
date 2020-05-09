@@ -5,7 +5,6 @@ import 'package:cotrak/DailyData.dart';
 import 'package:cotrak/HeaderText.dart';
 import 'package:cotrak/HorizontalStatCards.dart';
 import 'package:cotrak/RefreshIndicator.dart';
-import 'package:country_code_picker/country_code_picker.dart';
 import "package:flutter/material.dart";
 import 'package:flutter/services.dart';
 import 'package:keyboard_visibility/keyboard_visibility.dart';
@@ -57,8 +56,6 @@ class _StatsPageState extends State<StatsPage> {
   @override
   void initState() {
     getAllCountries();
-    // getLatestGlobalData();
-    // getDailyData(null);
     updateAllData();
     KeyboardVisibilityNotification().addNewListener(
       onChange: (bool visible) {
@@ -93,22 +90,23 @@ class _StatsPageState extends State<StatsPage> {
 
   updateAllData({country, resetListViewController: true}) async {
     var tempLatestData, tempDailyData;
+
     if (country != null) {
-      //country logic
-      tempLatestData = await getLatestCountryData(country);
+      tempLatestData = await getLatestCountryData(country['alpha2code']);
     } else {
-      //global logic
       tempLatestData = await getLatestGlobalData();
     }
 
-    tempDailyData = await getDailyData(country);
+    tempDailyData = await getDailyData(country != null? country : null);
+
+    var decodedTempLatestData = json.decode(tempLatestData.body);
 
     setState(() {
-      latestData = tempLatestData;
-      dailyData = tempDailyData;
+      latestData = decodedTempLatestData.length > 0 ? decodedTempLatestData[0] : {};
+      dailyData = tempDailyData.data;
       selectedCountry = country;
 
-      updateDailyChartData(tempDailyData);
+      updateDailyChartData(tempDailyData.data);
     });
 
     if (resetListViewController) {
@@ -117,53 +115,40 @@ class _StatsPageState extends State<StatsPage> {
     }
   }
 
-  getLatestGlobalData() async {
-    final response = await http.get(
+  Future getLatestGlobalData() {
+    final response = http.get(
       'https://covid-19-data.p.rapidapi.com/totals?format=json',
       headers: {
         "x-rapidapi-host": "covid-19-data.p.rapidapi.com",
         "x-rapidapi-key": "kobRJjesp4mshawkaj0YnlruOFmKp137FOGjsnwtgFFV9t5Lso"
       },
     );
-    final responseJson = json.decode(response.body);
 
-    return responseJson[0];
+    return response;
   }
 
-  getLatestCountryData(country) async {
-    final response = await http.get(
+  Future getLatestCountryData(country) {
+    final response = http.get(
       'https://covid-19-data.p.rapidapi.com/country/code?code=$country&format=json',
       headers: {
         "x-rapidapi-host": "covid-19-data.p.rapidapi.com",
         "x-rapidapi-key": "kobRJjesp4mshawkaj0YnlruOFmKp137FOGjsnwtgFFV9t5Lso"
       },
     );
-    final responseJson = json.decode(response.body);
 
-    return responseJson[0];
+    return response;
   }
 
-  getDailyData(currentCountry) async {
-    var country;
-    var sameAsCurrentCountry = false;
-
-    if (currentCountry != null) {
-      country = countries
-          .firstWhere((country) => currentCountry == country['alpha2code']);
-      sameAsCurrentCountry = dailyData.length > 0 &&
-          dailyData['daily'].values.first['country'] == country['name'];
-    } else {
+  Future getDailyData(country) {
+    if (country == null) {
       country = {'name': "World"};
-      sameAsCurrentCountry = dailyData.length > 0 &&
-          dailyData['daily'].values.first['country'] == null;
     }
 
-    if (!sameAsCurrentCountry) {
-      DocumentReference statsRef =
-          Firestore.instance.collection("stats").document(country['name']);
-      DocumentSnapshot getDoc = await statsRef.get();
-      return getDoc.data;
-    }
+    DocumentReference statsRef =
+        Firestore.instance.collection("stats").document(country['name']);
+    Future<DocumentSnapshot> getDoc = statsRef.get();
+
+    return getDoc;
   }
 
   setPeriodicChartData(sourceType, count, incrementRate) {
@@ -238,7 +223,6 @@ class _StatsPageState extends State<StatsPage> {
 
   @override
   Widget build(BuildContext context) {
-    print("here");
     return SmartRefresher(
       enablePullDown: true,
       header: WaterDropMaterialHeader(
@@ -254,7 +238,8 @@ class _StatsPageState extends State<StatsPage> {
           HeaderText(),
           CotrakCountryPicker(
             selectedCountry: selectedCountry,
-            onCountryChange: _onCountryChange,
+            onCountryChange: updateAllData,
+            countries: countries,
           ),
           HorizontalStatCards(
               listViewController: listViewController,
@@ -300,9 +285,5 @@ class _StatsPageState extends State<StatsPage> {
           style: TextStyle(
               color: dataType == title ? Colors.white : null, fontSize: 13),
         ));
-  }
-
-  void _onCountryChange(CountryCode countryCode) {
-    updateAllData(country: countryCode == null ? null : countryCode.code);
   }
 }
