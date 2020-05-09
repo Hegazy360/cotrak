@@ -50,7 +50,7 @@ class HorizontalStatCards extends StatelessWidget {
                   color: primaryColor,
                 ),
                 Text(
-                  value != null ? NumberFormat.compact().format(value) : '—',
+                  value != null ? value < 0? 'N/A' : NumberFormat.compact().format(value) : '—',
                   style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 20,

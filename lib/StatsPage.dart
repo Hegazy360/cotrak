@@ -97,12 +97,13 @@ class _StatsPageState extends State<StatsPage> {
       tempLatestData = await getLatestGlobalData();
     }
 
-    tempDailyData = await getDailyData(country != null? country : null);
+    tempDailyData = await getDailyData(country != null ? country : null);
 
     var decodedTempLatestData = json.decode(tempLatestData.body);
 
     setState(() {
-      latestData = decodedTempLatestData.length > 0 ? decodedTempLatestData[0] : {};
+      latestData =
+          decodedTempLatestData.length > 0 ? decodedTempLatestData[0] : {};
       dailyData = tempDailyData.data;
       selectedCountry = country;
 
