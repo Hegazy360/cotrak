@@ -3,16 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:sliding_sheet/sliding_sheet.dart';
 
-import 'package:logger/logger.dart';
-
-var logger = Logger(
-  printer: PrettyPrinter(),
-);
-
-var loggerNoStack = Logger(
-  printer: PrettyPrinter(methodCount: 0),
-);
-
 class CotrakCountryPicker extends StatelessWidget {
   const CotrakCountryPicker(
       {Key key,
@@ -111,9 +101,6 @@ class CotrakCountryPicker extends StatelessWidget {
                 physics: ClampingScrollPhysics(),
                 itemCount: countries.length,
                 itemBuilder: (_, i) {
-                  loggerNoStack.i(countries[i]['alpha2code']);
-                  loggerNoStack.i(countries[i]['name']);
-
                   return FlatButton(
                     onPressed: () {
                       onCountryChange(country: countries[i]);

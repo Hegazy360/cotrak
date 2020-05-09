@@ -275,7 +275,6 @@ class _StatsPageState extends State<StatsPage> {
   }
 
   FlatButton dataTypeButton(title) {
-    print(title);
     return FlatButton(
         onPressed: () {
           setState(() {
