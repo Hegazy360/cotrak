@@ -215,7 +215,7 @@ class _StatsPageState extends State<StatsPage> {
 
   void _onRefresh() async {
     _refreshController.refreshCompleted();
-    updateAllData();
+    updateAllData(country: selectedCountry);
   }
 
   void _onLoading() async {
